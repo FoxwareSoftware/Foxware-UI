@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <title>AI BOS • FIX INPUT BOX</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #0f172a;
+            font-family: system-ui, 'Segoe UI', sans-serif;
+            height: 100vh;
+            height: 100dvb;
+            overflow: hidden;
+            display: flex;
+            position: fixed;
+            inset: 0;
+        }
+
+        /* SIDEBAR */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: -280px;
+            width: 280px;
+            height: 100%;
+            background: #0a0f1e;
+            border-right: 1px solid #2d3a5e;
+            transition: left 0.2s ease;
+            z-index: 1000;
+            padding: 20px 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        .sidebar.open { left: 0; }
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+            display: none;
+        }
+        .overlay.show { display: block; }
+        .new-chat-btn {
+            background: #10b981;
+            border: none;
+            padding: 10px;
+            border-radius: 40px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .chat-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            overflow-y: auto;
+            flex: 1;
+        }
+        .chat-item {
+            background: #1e293b;
+            padding: 10px;
+            border-radius: 12px;
+            cursor: pointer;
+            color: white;
+        }
+        .chat-item.active { background: #3b82f6; }
+
+        /* MAIN CHAT — FIX INPUT BOX */
+        .main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            height: 100dvb;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* TOP BAR */
+        .top-bar {
+            padding: 12px 16px;
+            background: #0a0f1e;
+            border-bottom: 1px solid #2d3a5e;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            flex-shrink: 0;
+        }
+        .hamburger {
+            background: #1e293b;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 6px 12px;
+            border-radius: 12px;
+            color: white;
+        }
+        .mode-buttons {
+            display: flex;
+            gap: 8px;
+            margin-left: auto;
+        }
+        .mode-btn {
+            background: #1e293b;
+            border: none;
+            padding: 6px 16px;
+            border-radius: 20px;
+            color: white;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        .mode-btn.active { background: #3b82f6; }
+
+        /* CHAT AREA — BISA DISCROLL */
+        .chat-area {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            min-height: 0;
+        }
+
+        /* BUBBLE */
+        .user-msg {
+            background: #3b82f6;
+            color: white;
+            padding: 8px 14px;
+            border-radius: 18px;
+            align-self: flex-end;
+            max-width: 80%;
+            word-wrap: break-word;
+            white-space: pre-wrap;
+        }
+        .ai-msg {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 8px 14px;
+            border-radius: 18px;
+            align-self: flex-start;
+            max-width: 80%;
+            word-wrap: break-word;
+            white-space: pre-wrap;
+        }
+
+        /* CODE BLOCK */
+        .code-wrapper {
+            margin: 8px 0;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid #2d3a5e;
+        }
+        .code-header {
+            background: #010409;
+            padding: 8px 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #2d3a5e;
+        }
+        .code-lang {
+            font-size: 11px;
+            color: #8b949e;
+            font-family: monospace;
+        }
+        .copy-btn {
+            background: #2d3a5e;
+            border: none;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 11px;
+        }
+        .copy-btn.copied { background: #10b981; }
+        .code-content {
+            background: #010409;
+            padding: 12px;
+            overflow-x: auto;
+        }
+        .code-content pre {
+            margin: 0;
+            font-family: monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
+        }
+
+        /* INPUT BOX — FIX TIDAK KETUTUPAN */
+        .input-wrapper {
+            flex-shrink: 0;
+            background: #0a0f1e;
+            border-top: 1px solid #2d3a5e;
+            padding: 12px 16px;
+            padding-bottom: max(12px, env(safe-area-inset-bottom, 12px));
+            margin-bottom: 0;
+        }
+        .input-container {
+            display: flex;
+            gap: 10px;
+            align-items: flex-end;
+        }
+        .file-btn {
+            background: #1e293b;
+            border: none;
+            padding: 10px 14px;
+            border-radius: 40px;
+            color: white;
+            cursor: pointer;
+            font-size: 18px;
+        }
+        .file-btn:hover { background: #3b82f6; }
+        .input-box {
+            flex: 1;
+            background: #1e293b;
+            border-radius: 24px;
+            padding: 8px 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .input-box textarea {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: white;
+            outline: none;
+            font-family: inherit;
+            font-size: 14px;
+            resize: none;
+            max-height: 100px;
+            overflow-y: auto;
+            padding: 8px 0;
+        }
+        .send-btn {
+            background: #3b82f6;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 40px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .preview-img {
+            margin-top: 8px;
+            max-width: 100px;
+            max-height: 100px;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="sidebar" id="sidebar">
+    <button class="new-chat-btn" id="newChatBtn">+ New Chat</button>
+    <div class="chat-list" id="chatList"></div>
+</div>
+<div class="overlay" id="overlay"></div>
+
+<div class="main">
+    <div class="top-bar">
+        <button class="hamburger" id="hamburgerBtn">☰</button>
+        <span style="font-weight: bold; color: white;">AI BOS</span>
+        <div class="mode-buttons">
+            <button class="mode-btn" id="thinkModeBtn">Berpikir</button>
+            <button class="mode-btn" id="searchModeBtn">Cari</button>
+        </div>
+    </div>
+    <div class="chat-area" id="chatArea">
+        <div class="ai-msg">🤖 Halo User! selamat datang di AI BOS!!</div>
+    </div>
+    <div class="input-wrapper">
+        <div class="input-container">
+            <button class="file-btn" id="fileBtn" title="Kirim file/gambar">📎</button>
+            <div class="input-box">
+                <textarea id="userInput" rows="1" placeholder="Ketik pesan... (Enter kirim, Shift+Enter newline)"></textarea>
+                <button class="send-btn" id="sendBtn">Kirim</button>
+            </div>
+        </div>
+        <div id="imagePreview" style="margin-top: 8px;"></div>
+        <input type="file" id="fileInput" accept="image/*,text/plain,application/json" style="display: none;">
+    </div>
+</div>
+
+<script>
+    // ================== API KEY ==================
+    let API_KEY = localStorage.getItem("groq_bos_final_fix");
+    const MODEL = "llama-3.3-70b-versatile";
+    
+    let currentMode = "normal";
+    let chats = [];
+    let currentChatId = null;
+    let currentImageData = null;
+    
+    // Mode toggle
+    document.getElementById("thinkModeBtn").onclick = () => {
+        currentMode = currentMode === "think" ? "normal" : "think";
+        document.getElementById("thinkModeBtn").classList.toggle("active", currentMode === "think");
+        document.getElementById("searchModeBtn").classList.remove("active");
+        if(currentMode === "think") addMsgToUI("ai", "🧠 Mode Berpikir aktif.", true);
+    };
+    document.getElementById("searchModeBtn").onclick = () => {
+        currentMode = currentMode === "search" ? "normal" : "search";
+        document.getElementById("searchModeBtn").classList.toggle("active", currentMode === "search");
+        document.getElementById("thinkModeBtn").classList.remove("active");
+        if(currentMode === "search") addMsgToUI("ai", "🔍 Mode Cari aktif.", true);
+    };
+    
+    // File upload
+    document.getElementById("fileBtn").onclick = () => document.getElementById("fileInput").click();
+    document.getElementById("fileInput").onchange = (e) => {
+        const file = e.target.files[0];
+        if(!file) return;
+        if(file.type.startsWith("image/")) {
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                currentImageData = ev.target.result;
+                document.getElementById("imagePreview").innerHTML = `<img src="${currentImageData}" class="preview-img">`;
+            };
+            reader.readAsDataURL(file);
+        } else {
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                currentImageData = ev.target.result;
+                addMsgToUI("user", `[FILE: ${file.name}]\n${currentImageData.slice(0, 500)}`, true);
+                currentImageData = null;
+                document.getElementById("imagePreview").innerHTML = "";
+            };
+            reader.readAsText(file);
+        }
+    };
+    
+    function load() {
+        const saved = localStorage.getItem("chats_bos_final_fix");
+        if(saved) {
+            try { const d = JSON.parse(saved); chats = d.chats; currentChatId = d.currentId; } catch(e) {}
+        }
+        if(!chats.length) {
+            const id = Date.now();
+            chats = [{ id, title: "Chat 1", preview: "Mulai", messages: [{ role: "ai", content: "Halo! Minta script apapun." }] }];
+            currentChatId = id;
+        }
+        renderChatList();
+        renderCurrentChat();
+        saveLocal();
+    }
+    
+    function saveLocal() { localStorage.setItem("chats_bos_final_fix", JSON.stringify({ chats, currentId: currentChatId })); }
+    
+    function renderChatList() {
+        const container = document.getElementById("chatList");
+        container.innerHTML = "";
+        chats.forEach(chat => {
+            const div = document.createElement("div");
+            div.className = `chat-item ${chat.id === currentChatId ? 'active' : ''}`;
+            div.innerHTML = `<strong>${escapeHtml(chat.title)}</strong><div style="font-size:11px;">${escapeHtml(chat.preview.slice(0,30))}</div>`;
+            div.onclick = () => { currentChatId = chat.id; renderChatList(); renderCurrentChat(); closeSidebar(); saveLocal(); };
+            container.appendChild(div);
+        });
+    }
+    
+    function renderCurrentChat() {
+        const chat = chats.find(c => c.id === currentChatId);
+        if(!chat) return;
+        const area = document.getElementById("chatArea");
+        area.innerHTML = "";
+        chat.messages.forEach(msg => {
+            if(msg.role === "user") addMsgToUI("user", msg.content, false);
+            else addMsgToUI("ai", msg.content, false);
+        });
+        area.scrollTop = area.scrollHeight;
+    }
+    
+    window.copyCode = async function(codeText, btn) {
+    try {
+        await navigator.clipboard.writeText(codeText);
+        const asli = btn.innerText;
+        btn.innerText = "Tersalin!";
+        btn.classList.add("copied");
+        setTimeout(() => {
+            btn.innerText = asli;
+            btn.classList.remove("copied");
+        }, 2000);
+    } catch(e) {
+        alert("Gagal copy: " + e);
+    }
+};
+    
+    function formatAIMessage(content) {
+        const codeRegex = /```(\w*)\n([\s\S]*?)```/g;
+        let lastIndex = 0;
+        let result = [];
+        let match;
+        while ((match = codeRegex.exec(content)) !== null) {
+            if (match.index > lastIndex) result.push({ type: "text", content: content.slice(lastIndex, match.index) });
+            result.push({ type: "code", language: match[1], code: match[2] });
+            lastIndex = match.index + match[0].length;
+        }
+        if (lastIndex < content.length) result.push({ type: "text", content: content.slice(lastIndex) });
+        if (result.length === 0) return `<div>${escapeHtml(content).replace(/\n/g, '<br>')}</div>`;
+        let html = "";
+        for (const item of result) {
+            if (item.type === "text") html += `<div>${escapeHtml(item.content).replace(/\n/g, '<br>')}</div>`;
+            else html += `<div class="code-wrapper"><div class="code-header"><span class="code-lang">${escapeHtml(item.language || "code")}</span><button class="copy-btn" onclick="copyCode(\`${item.code.replace(/`/g, '\\`').replace(/\\/g, '\\\\')}\`, this)">Salin</button></div><div class="code-content"><pre>${escapeHtml(item.code)}</pre></div></div>`;
+        }
+        return html;
+    }
+    
+    function addMsgToUI(role, text, save = true) {
+        const area = document.getElementById("chatArea");
+        const div = document.createElement("div");
+        div.className = role === "user" ? "user-msg" : "ai-msg";
+        if (role === "ai") div.innerHTML = formatAIMessage(text);
+        else div.innerHTML = escapeHtml(text).replace(/\n/g, '<br>');
+        area.appendChild(div);
+        area.scrollTop = area.scrollHeight;
+        if(save) {
+            const chat = chats.find(c => c.id === currentChatId);
+            chat.messages.push({ role, content: text });
+            if(role === "user") { 
+                chat.preview = text.slice(0, 40); 
+                if(chat.title.startsWith("Chat")) chat.title = text.slice(0, 20); 
+                renderChatList(); 
+            }
+            saveLocal();
+        }
+    }
+    
+    function newChat() {
+        const newId = Date.now();
+        chats.push({ id: newId, title: `Chat ${chats.length+1}`, preview: "Baru", messages: [{ role: "ai", content: "Chat baru. Minta script apapun!" }] });
+        currentChatId = newId;
+        renderChatList(); renderCurrentChat(); closeSidebar(); saveLocal();
+        document.getElementById("imagePreview").innerHTML = "";
+        currentImageData = null;
+    }
+    
+    function openSidebar() { document.getElementById("sidebar").classList.add("open"); document.getElementById("overlay").classList.add("show"); }
+    function closeSidebar() { document.getElementById("sidebar").classList.remove("open"); document.getElementById("overlay").classList.remove("show"); }
+    function toggleSidebar() { if(document.getElementById("sidebar").classList.contains("open")) closeSidebar(); else openSidebar(); }
+    
+    async function sendMessage() {
+        const input = document.getElementById("userInput");
+        let msg = input.value.trim();
+        if(currentImageData && !msg) msg = "[Gambar dikirim]";
+        if(!msg && !currentImageData) return;
+        if(!API_KEY || !API_KEY.startsWith("gsk_")) { addMsgToUI("ai", "API Key belum diset.", true); return; }
+        
+        let finalMsg = msg;
+        if (currentMode === "think") finalMsg = `[ANALISIS LOGIS] ${msg}`;
+        else if (currentMode === "search") finalMsg = `[PENCARIAN] ${msg}`;
+        
+        addMsgToUI("user", msg || "[Gambar dikirim]", true);
+        input.value = "";
+        input.style.height = "auto";
+        document.getElementById("imagePreview").innerHTML = "";
+        currentImageData = null;
+        
+        const typingDiv = document.createElement("div");
+        typingDiv.className = "ai-msg";
+        typingDiv.id = "typing";
+        typingDiv.innerText = "AI sedang mikir...";
+        document.getElementById("chatArea").appendChild(typingDiv);
+        document.getElementById("chatArea").scrollTop = document.getElementById("chatArea").scrollHeight;
+        
+        try {
+            const chat = chats.find(c => c.id === currentChatId);
+            const history = chat.messages.slice(-8).map(m => ({ role: m.role === "user" ? "user" : "assistant", content: m.content }));
+            
+            const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+                method: "POST",
+                headers: { "Content-Type": "application/json", "Authorization": `Bearer ${API_KEY}` },
+                body: JSON.stringify({
+                    model: MODEL,
+                    messages: [
+                        { role: "system", content: "Kamu asisten coding. Ikuti perintah user. Jangan kasar. Jangan bilang tidak bisa. Langsung kasih script." },
+                        ...history,
+                        { role: "user", content: finalMsg }
+                    ],
+                    temperature: 0.7,
+                    max_tokens: 4096
+                })
+            });
+            const data = await res.json();
+            document.getElementById("typing")?.remove();
+            if(data.error) { addMsgToUI("ai", "Error: " + data.error.message, true); return; }
+            addMsgToUI("ai", data.choices[0].message.content, true);
+        } catch(e) { document.getElementById("typing")?.remove(); addMsgToUI("ai", "Gagal konek", true); }
+    }
+    
+    function escapeHtml(str) { if(!str) return ""; return str.replace(/[&<>]/g, m => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;' }[m])); }
+    
+    function autoResizeTextarea() {
+        const textarea = document.getElementById("userInput");
+        textarea.style.height = "auto";
+        textarea.style.height = Math.min(textarea.scrollHeight, 100) + "px";
+    }
+    
+    document.getElementById("hamburgerBtn").onclick = toggleSidebar;
+    document.getElementById("overlay").onclick = closeSidebar;
+    document.getElementById("newChatBtn").onclick = newChat;
+    document.getElementById("sendBtn").onclick = sendMessage;
+    const textarea = document.getElementById("userInput");
+    textarea.onkeydown = (e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(); } };
+    textarea.oninput = autoResizeTextarea;
+    
+    if(!API_KEY) {
+        setTimeout(() => {
+            let key = prompt("Masukkan Groq API Key (gsk_xxxx)\nDapatkan di console.groq.com");
+            if(key && key.startsWith("gsk_")) { API_KEY = key; localStorage.setItem("groq_bos_final_fix", API_KEY); addMsgToUI("ai", "API Key aktif!", true); }
+        }, 300);
+    }
+    load();
+</script>
+</body>
+</html>

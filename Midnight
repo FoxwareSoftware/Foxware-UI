@@ -1,0 +1,802 @@
+-- [[
+   -- Midnight Hub Library
+   -- Version 2.0.1 (Fixed)
+   -- By Midnight Team
+]]
+
+local TweenService = game:GetService("TweenService") 
+local UserInputService = game:GetService("UserInputService") 
+local CoreGui = game:GetService("CoreGui") 
+local Players = game:GetService("Players") 
+local LocalPlayer = Players.LocalPlayer 
+local UDim2New = UDim2.new
+local FromRGB = Color3.fromRGB
+
+local Midnight = { 
+    Version = "2.0.1 Beta Version",
+    Font = Enum.Font.GothamBold,
+    Themes = { 
+        ["Default"] = { Background = FromRGB(45, 45, 45), Accent = FromRGB(120, 120, 120), Text = FromRGB(255, 255, 255), Element = FromRGB(60, 60, 60) }, 
+        ["Galaxy"] = { Background = FromRGB(15, 10, 30), Accent = FromRGB(230, 50, 180), Text = FromRGB(255, 255, 255), Element = FromRGB(30, 20, 50) }, 
+        ["Ocean"] = { Background = FromRGB(10, 25, 40), Accent = FromRGB(0, 180, 255), Text = FromRGB(255, 255, 255), Element = FromRGB(20, 45, 70) }, 
+        ["Midnight Blue"] = { Background = FromRGB(10, 15, 28), Accent = FromRGB(100, 80, 200), Text = FromRGB(220, 220, 255), Element = FromRGB(55, 40, 125) }, 
+        ["Rainbow"] = { Background = FromRGB(20, 20, 20), Accent = FromRGB(255, 255, 255), Text = FromRGB(255, 255, 255), Element = FromRGB(40, 40, 40) }, 
+        ["Midnight"] = { Background = FromRGB(12, 12, 18), Accent = FromRGB(100, 80, 200), Text = FromRGB(255, 255, 255), Element = FromRGB(25, 25, 35) }, 
+        ["Black"] = { Background = FromRGB(5, 5, 5), Accent = FromRGB(255, 255, 255), Text = FromRGB(255, 255, 255), Element = FromRGB(20, 20, 20) }, 
+        ["White"] = { Background = FromRGB(245, 245, 245), Accent = FromRGB(30, 30, 30), Text = FromRGB(0, 0, 0), Element = FromRGB(220, 220, 220) }, 
+        ["Blood Red"] = { Background = FromRGB(170, 10, 10), Accent = FromRGB(180, 10, 20), Text = FromRGB(255, 230, 230), Element = FromRGB(130, 12, 22) }, 
+        ["Galaxy Purple"] = { Background = FromRGB(130, 50, 195), Accent = FromRGB(160, 60, 220), Text = FromRGB(242, 232, 255), Element = FromRGB(112, 40, 170) } 
+    } 
+} 
+
+function Midnight:SetNotification(Message, Title, Duration) 
+    local ScreenGui = CoreGui:FindFirstChild("Midnight_UI") or Instance.new("ScreenGui", CoreGui) 
+    ScreenGui.Name = "Midnight_UI" 
+    ScreenGui.IgnoreGuiInset = true 
+    
+    local NotifyFrame = Instance.new("Frame", ScreenGui) 
+    NotifyFrame.Size = UDim2New(0, 280, 0, 70) 
+    NotifyFrame.BackgroundColor3 = FromRGB(20, 20, 25) 
+    NotifyFrame.BorderSizePixel = 0 
+    NotifyFrame.ClipsDescendants = true 
+    NotifyFrame.ZIndex = 20 
+    
+    local Corner = Instance.new("UICorner", NotifyFrame) 
+    Corner.CornerRadius = UDim.new(0, 8) 
+    
+    local TitleLabel = Instance.new("TextLabel", NotifyFrame) 
+    TitleLabel.Size = UDim2New(1, -20, 0, 25) 
+    TitleLabel.Position = UDim2New(0, 12, 0, 5) 
+    TitleLabel.BackgroundTransparency = 1 
+    TitleLabel.Text = Title or "Notification" 
+    TitleLabel.TextColor3 = FromRGB(255, 255, 255) 
+    TitleLabel.Font = Midnight.Font 
+    TitleLabel.TextSize = 16 
+    TitleLabel.TextXAlignment = Enum.TextXAlignment.Left 
+    TitleLabel.ZIndex = 21 
+    
+    local MsgLabel = Instance.new("TextLabel", NotifyFrame) 
+    MsgLabel.Size = UDim2New(1, -20, 0, 35) 
+    MsgLabel.Position = UDim2New(0, 12, 0, 30) 
+    MsgLabel.BackgroundTransparency = 1 
+    MsgLabel.Text = Message or "" 
+    MsgLabel.TextColor3 = FromRGB(180, 180, 180) 
+    MsgLabel.Font = Midnight.Font 
+    MsgLabel.TextSize = 14 
+    MsgLabel.TextXAlignment = Enum.TextXAlignment.Left 
+    MsgLabel.TextWrapped = true 
+    MsgLabel.ZIndex = 21 
+    
+    NotifyFrame.Position = UDim2New(1, 10, 1, -90) 
+    TweenService:Create(NotifyFrame, TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Position = UDim2New(1, -290, 1, -90)}):Play() 
+    
+    task.delay(Duration or 3, function() 
+        local OutTween = TweenService:Create(NotifyFrame, TweenInfo.new(0.4, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {Position = UDim2New(1, 10, 1, -90)}) 
+        OutTween:Play() 
+        OutTween.Completed:Connect(function() 
+            NotifyFrame:Destroy() 
+        end) 
+    end) 
+end 
+
+local function MakeDraggable(Frame) 
+    local dragging = false 
+    local dragInput, dragStart, startPos 
+    Frame.InputBegan:Connect(function(input) 
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then 
+            dragging = true 
+            dragStart = input.Position 
+            startPos = Frame.Position 
+        end 
+    end) 
+    Frame.InputChanged:Connect(function(input) 
+        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then 
+            dragInput = input 
+        end 
+    end) 
+    UserInputService.InputChanged:Connect(function(input) 
+        if input == dragInput and dragging then 
+            local delta = input.Position - dragStart 
+            Frame.Position = UDim2New(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y) 
+        end 
+    end) 
+    UserInputService.InputEnded:Connect(function(input) 
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then 
+            dragging = false 
+        end 
+    end) 
+end 
+
+function Midnight:AddWindow(Config) 
+    local Window = { 
+        Name = Config.Name or "Midnight Hub", 
+        Theme = Config.Theme or "Default",
+        Text = Config.Text or "Open",
+        Tabs = {} 
+    } 
+    local SelectedTheme = Midnight.Themes[Window.Theme] or Midnight.Themes["Default"] 
+    local ScreenGui = CoreGui:FindFirstChild("Midnight_UI") or Instance.new("ScreenGui", CoreGui) 
+    ScreenGui.Name = "Midnight_UI" 
+    ScreenGui.IgnoreGuiInset = true 
+    
+    local MainFrame = Instance.new("Frame", ScreenGui) 
+    MainFrame.Size = UDim2New(0, 550, 0, 380) 
+    MainFrame.Position = UDim2New(0.5, -275, 0.5, -190) 
+    MainFrame.BackgroundColor3 = SelectedTheme.Background 
+    MainFrame.BorderSizePixel = 0 
+    MainFrame.Visible = true 
+    MainFrame.ZIndex = 2 
+    Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 10) 
+    MakeDraggable(MainFrame) 
+    
+    local TitleFrame = Instance.new("Frame", MainFrame) 
+    TitleFrame.Size = UDim2New(1, 0, 0, 55) 
+    TitleFrame.BackgroundTransparency = 1 
+    TitleFrame.ZIndex = 3 
+    
+    local TitleLabel = Instance.new("TextLabel", TitleFrame) 
+    TitleLabel.Position = UDim2New(0, 19, 0, 27) 
+    TitleLabel.BackgroundTransparency = 1 
+    TitleLabel.Text = Window.Name .. " (" .. Midnight.Version .. ")" 
+    TitleLabel.TextColor3 = SelectedTheme.Text 
+    TitleLabel.Font = Midnight.Font 
+    TitleLabel.TextSize = 22 
+    TitleLabel.AutomaticSize = Enum.AutomaticSize.X 
+    TitleLabel.ZIndex = 4 
+    
+    local CloseBtn = Instance.new("TextButton", TitleFrame) 
+    CloseBtn.Size = UDim2New(0, 25, 0, 25) 
+    CloseBtn.Position = UDim2New(1, -35, 0, 15) 
+    CloseBtn.BackgroundTransparency = 0 
+    CloseBtn.BackgroundColor3 = SelectedTheme.Background 
+    CloseBtn.Text = "X" 
+    CloseBtn.TextColor3 = SelectedTheme.Text 
+    CloseBtn.Font = Midnight.Font 
+    CloseBtn.TextSize = 18 
+    CloseBtn.ZIndex = 4 
+    
+    local MinimizeBtn = Instance.new("TextButton", TitleFrame) 
+    MinimizeBtn.Size = UDim2New(0, 25, 0, 25) 
+    MinimizeBtn.Position = UDim2New(1, -65, 0, 15) 
+    MinimizeBtn.BackgroundTransparency = 0 
+    MinimizeBtn.BackgroundColor3 = SelectedTheme.Background 
+    MinimizeBtn.Text = "-" 
+    MinimizeBtn.TextColor3 = SelectedTheme.Text 
+    MinimizeBtn.Font = Midnight.Font 
+    MinimizeBtn.TextSize = 16 
+    MinimizeBtn.ZIndex = 4 
+    
+    local OpenBtn = Instance.new("TextButton", ScreenGui) 
+    OpenBtn.Name = "MidnightOpenBtn" 
+    OpenBtn.Size = UDim2New(0, 100, 0, 100)
+    OpenBtn.Position = UDim2New(0.015, 0, 0.03, 150) 
+    OpenBtn.BackgroundTransparency = 0.7 
+    OpenBtn.BackgroundColor3 = FromRGB(255, 255, 255) 
+    OpenBtn.Text = Window.Text
+    OpenBtn.TextColor3 = SelectedTheme.Text
+    OpenBtn.TextWrapped = true
+    OpenBtn.Visible = false 
+    OpenBtn.Active = true 
+    OpenBtn.ZIndex = 5 
+    MakeDraggable(OpenBtn) -- Menggunakan custom drag, menghindari bug .Draggable deprecated
+    
+    CloseBtn.MouseEnter:Connect(function() CloseBtn.TextColor3 = FromRGB(255, 85, 85) end) 
+    CloseBtn.MouseLeave:Connect(function() CloseBtn.TextColor3 = SelectedTheme.Text end) 
+    MinimizeBtn.MouseEnter:Connect(function() MinimizeBtn.TextColor3 = SelectedTheme.Accent end) 
+    MinimizeBtn.MouseLeave:Connect(function() MinimizeBtn.TextColor3 = SelectedTheme.Text end) 
+    
+    local ClosePage = Instance.new("Frame", MainFrame) 
+    ClosePage.Name = "ClosePage" 
+    ClosePage.AnchorPoint = Vector2.new(0.5, 0.5) 
+    ClosePage.BackgroundColor3 = FromRGB(0,0,0)
+    ClosePage.BackgroundTransparency = 1 
+    ClosePage.Position = UDim2.new(0.5, 0, 0.5, 0) 
+    ClosePage.Size = UDim2.new(1, 0, 1, 0)
+    ClosePage.Visible = false 
+    ClosePage.ZIndex = 20 
+    Instance.new("UICorner", ClosePage).CornerRadius = UDim.new(0, 10)
+    
+    local CloseFrame = Instance.new("Frame", ClosePage) 
+    CloseFrame.Name = "CloseFrame" 
+    CloseFrame.AnchorPoint = Vector2.new(0.5, 0.5) 
+    CloseFrame.BackgroundColor3 = SelectedTheme.Background 
+    CloseFrame.Position = UDim2.new(0.5, 0, 0.5, 0) 
+    CloseFrame.Size = UDim2.new(0, 325, 0, 150) 
+    CloseFrame.ZIndex = 21 
+    Instance.new("UICorner", CloseFrame).CornerRadius = UDim.new(0, 8)
+    
+    local closeFrameStroke = Instance.new("UIStroke", CloseFrame) 
+    closeFrameStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border 
+    closeFrameStroke.Color = SelectedTheme.Accent 
+    closeFrameStroke.Thickness = 1.5
+    
+    local DontClose = Instance.new("TextButton", CloseFrame) 
+    DontClose.Name = "DontClose" 
+    DontClose.BackgroundColor3 = SelectedTheme.Element 
+    DontClose.Position = UDim2.new(0.08, 0, 0.55, 0) 
+    DontClose.Size = UDim2.new(0, 120, 0, 40) 
+    DontClose.Font = Midnight.Font 
+    DontClose.Text = "Don't Close" 
+    DontClose.TextColor3 = FromRGB(255, 85, 85) 
+    DontClose.TextSize = 16 
+    DontClose.ZIndex = 22 
+    Instance.new("UICorner", DontClose).CornerRadius = UDim.new(0, 6) 
+    
+    local YesClose = Instance.new("TextButton", CloseFrame) 
+    YesClose.Name = "YesClose" 
+    YesClose.BackgroundColor3 = SelectedTheme.Element 
+    YesClose.Position = UDim2.new(0.55, 0, 0.55, 0) 
+    YesClose.Size = UDim2.new(0, 120, 0, 40) 
+    YesClose.Font = Midnight.Font 
+    YesClose.Text = "Yes, Close" 
+    YesClose.TextColor3 = FromRGB(85, 255, 85) 
+    YesClose.TextSize = 16 
+    YesClose.ZIndex = 22 
+    Instance.new("UICorner", YesClose).CornerRadius = UDim.new(0, 6) 
+    
+    local CloseMessage = Instance.new("TextLabel", CloseFrame) 
+    CloseMessage.Name = "CloseMessage" 
+    CloseMessage.BackgroundTransparency = 1
+    CloseMessage.Position = UDim2.new(0.05, 0, 0.1, 0) 
+    CloseMessage.Size = UDim2.new(0.9, 0, 0, 50) 
+    CloseMessage.Font = Midnight.Font 
+    CloseMessage.Text = "Warning! Are you sure you want to close " .. Window.Name .. "?" 
+    CloseMessage.TextColor3 = SelectedTheme.Text 
+    CloseMessage.TextSize = 16 
+    CloseMessage.TextWrapped = true
+    CloseMessage.ZIndex = 22
+    
+    CloseBtn.MouseButton1Click:Connect(function() 
+        ClosePage.Visible = true 
+        TweenService:Create(ClosePage, TweenInfo.new(0.2), { BackgroundTransparency = 0.4 }):Play() 
+    end) 
+    
+    YesClose.MouseButton1Click:Connect(function() 
+        local t = TweenService:Create(MainFrame, TweenInfo.new(0.2), { Size = UDim2.new(0, 0, 0, 0), BackgroundTransparency = 1 })
+        t:Play() 
+        t.Completed:Connect(function() 
+            ScreenGui:Destroy() 
+        end) 
+    end) 
+    
+    DontClose.MouseButton1Click:Connect(function() 
+        local t = TweenService:Create(ClosePage, TweenInfo.new(0.2), { BackgroundTransparency = 1 }) 
+        t:Play() 
+        t.Completed:Connect(function() 
+            ClosePage.Visible = false 
+        end)
+    end)
+    
+    MinimizeBtn.MouseButton1Click:Connect(function() MainFrame.Visible = false OpenBtn.Visible = true end) 
+    OpenBtn.MouseButton1Click:Connect(function() MainFrame.Visible = true OpenBtn.Visible = false end) 
+    
+    local SidebarContainer = Instance.new("Frame", MainFrame) 
+    SidebarContainer.Size = UDim2New(0, 140, 1, -60) 
+    SidebarContainer.Position = UDim2New(0, 0, 0, 60) 
+    SidebarContainer.BackgroundTransparency = 1 
+    SidebarContainer.ZIndex = 3 
+    
+    local SidebarTabs = Instance.new("ScrollingFrame", SidebarContainer) 
+    SidebarTabs.Size = UDim2New(1, 0, 1, -55) 
+    SidebarTabs.BackgroundTransparency = 1 
+    SidebarTabs.CanvasSize = UDim2New(0, 0, 0, 0) 
+    SidebarTabs.ScrollBarThickness = 0 
+    SidebarTabs.ZIndex = 4 
+    
+    local SidebarLayout = Instance.new("UIListLayout", SidebarTabs) 
+    SidebarLayout.Padding = UDim.new(0, 6) 
+    SidebarLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center 
+    SidebarLayout.SortOrder = Enum.SortOrder.LayoutOrder 
+    SidebarLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function() 
+        SidebarTabs.CanvasSize = UDim2New(0, 0, 0, SidebarLayout.AbsoluteContentSize.Y + 5) 
+    end) 
+    
+    local UserProfileFrame = Instance.new("Frame", SidebarContainer) 
+    UserProfileFrame.Size = UDim2New(1, -10, 0, 50) 
+    UserProfileFrame.Position = UDim2New(0, 5, 1, -52) 
+    UserProfileFrame.BackgroundColor3 = SelectedTheme.Element 
+    UserProfileFrame.BackgroundTransparency = 0.3 
+    UserProfileFrame.ZIndex = 4 
+    Instance.new("UICorner", UserProfileFrame).CornerRadius = UDim.new(0, 6) 
+    
+    local AvatarImage = Instance.new("ImageLabel", UserProfileFrame) 
+    AvatarImage.Size = UDim2New(0, 38, 0, 38) 
+    AvatarImage.Position = UDim2New(0, 6, 0.5, -19) 
+    AvatarImage.BackgroundColor3 = SelectedTheme.Background 
+    AvatarImage.BorderSizePixel = 0 
+    AvatarImage.ZIndex = 5 
+    Instance.new("UICorner", AvatarImage).CornerRadius = UDim.new(1, 0) 
+    AvatarImage.Image = "rbxthumb://type=AvatarHeadShot&id=" .. LocalPlayer.UserId .. "&w=420&h=420" 
+    
+    local TextContainer = Instance.new("Frame", UserProfileFrame) 
+    TextContainer.Size = UDim2New(1, -50, 1, 0) 
+    TextContainer.Position = UDim2New(0, 48, 0, 0) 
+    TextContainer.BackgroundTransparency = 1 
+    TextContainer.ZIndex = 5 
+    
+    local DisplayLabel = Instance.new("TextLabel", TextContainer) 
+    DisplayLabel.Size = UDim2New(1, 0, 0, 22) 
+    DisplayLabel.Position = UDim2New(0, 0, 0, 5) 
+    DisplayLabel.BackgroundTransparency = 1 
+    DisplayLabel.Text = LocalPlayer.DisplayName 
+    DisplayLabel.TextColor3 = FromRGB(255, 255, 255) 
+    DisplayLabel.Font = Midnight.Font 
+    DisplayLabel.TextSize = 13 
+    DisplayLabel.TextXAlignment = Enum.TextXAlignment.Left 
+    DisplayLabel.TextTruncate = Enum.TextTruncate.AtEnd 
+    DisplayLabel.ZIndex = 6 
+    
+    local NameLabel = Instance.new("TextLabel", TextContainer) 
+    NameLabel.Size = UDim2New(1, 0, 0, 18) 
+    NameLabel.Position = UDim2New(0, 0, 0, 23) 
+    NameLabel.BackgroundTransparency = 1 
+    NameLabel.Text = "@" .. LocalPlayer.Name 
+    NameLabel.TextColor3 = FromRGB(255, 255, 255) 
+    NameLabel.TextTransparency = 0.5 
+    NameLabel.Font = Enum.Font.Gotham 
+    NameLabel.TextSize = 11 
+    NameLabel.TextXAlignment = Enum.TextXAlignment.Left 
+    NameLabel.TextTruncate = Enum.TextTruncate.AtEnd 
+    NameLabel.ZIndex = 6 
+    
+    local ContainerHolder = Instance.new("Frame", MainFrame) 
+    ContainerHolder.Size = UDim2New(1, -160, 1, -75) 
+    ContainerHolder.Position = UDim2New(0, 145, 0, 65) 
+    ContainerHolder.BackgroundTransparency = 1 
+    ContainerHolder.ZIndex = 3 
+    
+    function Window:AddParagraph(ParaConfig) 
+        local ParaLabel = Instance.new("TextLabel", SidebarTabs) 
+        ParaLabel.Size = UDim2New(0, 125, 0, 30) 
+        ParaLabel.BackgroundTransparency = 1 
+        ParaLabel.Text = ParaConfig.Name or "Paragraph" 
+        ParaLabel.TextColor3 = SelectedTheme.Text 
+        ParaLabel.TextTransparency = 0.4 
+        ParaLabel.Font = Enum.Font.Gotham 
+        ParaLabel.TextSize = 12 
+        ParaLabel.TextXAlignment = Enum.TextXAlignment.Center 
+        ParaLabel.TextTruncate = Enum.TextTruncate.AtEnd 
+        ParaLabel.ZIndex = 5 
+        ParaLabel.LayoutOrder = 99999 
+        return ParaLabel 
+    end 
+    
+    function Window:AddSubTitle(SubConfig) 
+        local duration = SubConfig.Duration or 5 
+        local SubFrame = Instance.new("Frame", ScreenGui) 
+        SubFrame.Size = UDim2New(1, 0, 1, 0) 
+        SubFrame.BackgroundColor3 = FromRGB(0, 0, 0) 
+        SubFrame.BackgroundTransparency = 0 
+        SubFrame.BorderSizePixel = 0 
+        SubFrame.ZIndex = 50 
+        
+        local SubLabel = Instance.new("TextLabel", SubFrame) 
+        SubLabel.AnchorPoint = Vector2.new(0.5, 0.5) 
+        SubLabel.Position = UDim2New(0.5, 0, 0.5, 0) 
+        SubLabel.Size = UDim2New(0, 500, 0, 50) 
+        SubLabel.BackgroundTransparency = 1 
+        SubLabel.Text = SubConfig.Name or "Loading..." 
+        SubLabel.TextColor3 = FromRGB(255, 255, 255) 
+        SubLabel.TextTransparency = 0 
+        SubLabel.Font = Enum.Font.GothamBold 
+        SubLabel.TextSize = 24 
+        SubLabel.ZIndex = 51 
+        
+        task.spawn(function() 
+            task.wait(duration) 
+            local tweenInfo = TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out) 
+            local fadeSubFrame = TweenService:Create(SubFrame, tweenInfo, {BackgroundTransparency = 1}) 
+            local fadeLabel = TweenService:Create(SubLabel, tweenInfo, {TextTransparency = 1}) 
+            fadeSubFrame:Play() 
+            fadeLabel:Play() 
+            fadeLabel.Completed:Connect(function() 
+                SubLabel:Destroy() 
+                SubFrame:Destroy() 
+            end) 
+        end) 
+        return SubLabel 
+    end 
+    
+    function Window:AddKeySystem(KeyConfig) 
+        local KeySystem = { 
+            KeyCorrect = KeyConfig.KeyCorrect or {"Hello"}, 
+            SaveKey = KeyConfig.SaveKey or false 
+        } 
+        MainFrame.Visible = false 
+        OpenBtn.Visible = false 
+        
+        local KeyFrame = Instance.new("Frame", ScreenGui) 
+        KeyFrame.Name = "MidnightKeyFrame" 
+        KeyFrame.Size = UDim2New(0, 340, 0, 220)
+        KeyFrame.Position = UDim2New(0.5, -170, 0.5, -110) 
+        KeyFrame.BackgroundColor3 = SelectedTheme.Background 
+        KeyFrame.BorderSizePixel = 0 
+        KeyFrame.ZIndex = 12 
+        Instance.new("UICorner", KeyFrame).CornerRadius = UDim.new(0, 8) 
+        MakeDraggable(KeyFrame) 
+        
+        local KeyTitle = Instance.new("TextLabel", KeyFrame) 
+        KeyTitle.Size = UDim2New(1, 0, 0, 40) 
+        KeyTitle.Text = "Enter Activation Key" 
+        KeyTitle.TextColor3 = SelectedTheme.Text 
+        KeyTitle.Font = Midnight.Font 
+        KeyTitle.TextSize = 18 
+        KeyTitle.BackgroundTransparency = 1 
+        KeyTitle.ZIndex = 13 
+        
+        local TextBox = Instance.new("TextBox", KeyFrame) 
+        TextBox.Size = UDim2New(0, 280, 0, 40) 
+        TextBox.Position = UDim2New(0.5, -140, 0, 55) 
+        TextBox.BackgroundColor3 = SelectedTheme.Element 
+        TextBox.Text = "" 
+        TextBox.PlaceholderText = "Paste key here..." 
+        TextBox.TextColor3 = FromRGB(255, 255, 255) 
+        TextBox.Font = Midnight.Font 
+        TextBox.TextSize = 16 
+        TextBox.ZIndex = 13 
+        Instance.new("UICorner", TextBox) 
+
+        local CheckBtn = Instance.new("TextButton", KeyFrame)
+        CheckBtn.Size = UDim2New(0, 140, 0, 40)
+        CheckBtn.Position = UDim2New(0.5, -70, 0, 115)
+        CheckBtn.BackgroundColor3 = SelectedTheme.Accent
+        CheckBtn.Text = "Check Key"
+        CheckBtn.TextColor3 = SelectedTheme.Text
+        CheckBtn.Font = Midnight.Font
+        CheckBtn.TextSize = 16
+        CheckBtn.ZIndex = 13
+        Instance.new("UICorner", CheckBtn).CornerRadius = UDim.new(0, 6)
+        
+        CheckBtn.MouseButton1Click:Connect(function() 
+            local input = TextBox.Text 
+            local success = false 
+            for _, k in pairs(KeySystem.KeyCorrect) do 
+                if input == k then 
+                    success = true 
+                    break 
+                end 
+            end 
+            if success then 
+                KeyFrame:Destroy() 
+                MainFrame.Visible = true 
+            else 
+                Midnight:SetNotification("Invalid Key, try again.", "Error", 3) 
+                TextBox.Text = "" 
+            end 
+        end) 
+        return KeySystem 
+    end 
+    
+    function Window:AddTab(TabName) 
+        local Tab = {} 
+        local ContentFrame = Instance.new("ScrollingFrame", ContainerHolder) 
+        ContentFrame.Size = UDim2New(1, 0, 1, 0) 
+        ContentFrame.BackgroundTransparency = 1 
+        ContentFrame.CanvasSize = UDim2New(0, 0, 0, 0) 
+        ContentFrame.ScrollBarThickness = 4 
+        ContentFrame.Visible = false 
+        ContentFrame.ZIndex = 4 
+        
+        local ContentLayout = Instance.new("UIListLayout", ContentFrame) 
+        ContentLayout.Padding = UDim.new(0, 8) 
+        ContentLayout.SortOrder = Enum.SortOrder.LayoutOrder 
+        ContentLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function() 
+            ContentFrame.CanvasSize = UDim2New(0, 0, 0, ContentLayout.AbsoluteContentSize.Y + 15) 
+        end) 
+        
+        local EmptyLabel = Instance.new("TextLabel", ContentFrame) 
+        EmptyLabel.Name = "EmptyTabLabel" 
+        EmptyLabel.Size = UDim2New(1, 0, 0, 25) 
+        EmptyLabel.BackgroundTransparency = 1 
+        EmptyLabel.Text = "This tab is Empty" 
+        EmptyLabel.TextColor3 = SelectedTheme.Text 
+        EmptyLabel.TextTransparency = 0.4 
+        EmptyLabel.Font = Midnight.Font 
+        EmptyLabel.TextSize = 16 
+        EmptyLabel.TextXAlignment = Enum.TextXAlignment.Center 
+        EmptyLabel.Visible = false 
+        EmptyLabel.ZIndex = 5 
+        
+        local function CheckElements() 
+            local elementCount = 0 
+            for _, child in pairs(ContentFrame:GetChildren()) do 
+                if child:IsA("UIListLayout") or child.Name == "EmptyTabLabel" then continue end 
+                if child:IsA("TextButton") or child:IsA("Frame") or child:IsA("TextLabel") then 
+                    elementCount = elementCount + 1 
+                end 
+            end 
+            -- Perbaikan logika visibility CheckElements
+            EmptyLabel.Visible = (elementCount == 0) 
+        end 
+        
+        local TabBtn = Instance.new("TextButton", SidebarTabs) 
+        TabBtn.Size = UDim2New(0, 125, 0, 36) 
+        TabBtn.BackgroundColor3 = SelectedTheme.Element 
+        TabBtn.Text = TabName 
+        TabBtn.TextColor3 = FromRGB(180, 180, 180) 
+        TabBtn.Font = Midnight.Font 
+        TabBtn.TextSize = 15 
+        TabBtn.ZIndex = 5 
+        Instance.new("UICorner", TabBtn).CornerRadius = UDim.new(0, 6) 
+        TabBtn.LayoutOrder = #Window.Tabs + 1 
+        
+        TabBtn.MouseButton1Click:Connect(function() 
+            for _, frame in pairs(ContainerHolder:GetChildren()) do 
+                if frame:IsA("ScrollingFrame") then frame.Visible = false end 
+            end 
+            for _, btn in pairs(SidebarTabs:GetChildren()) do 
+                if btn:IsA("TextButton") then btn.TextColor3 = FromRGB(180, 180, 180) end 
+            end 
+            ContentFrame.Visible = true 
+            TabBtn.TextColor3 = SelectedTheme.Accent 
+            
+            -- Memastikan fungsi check ter-update saat tab diklik
+            CheckElements()
+        end) 
+        
+        if #Window.Tabs == 0 then 
+            ContentFrame.Visible = true 
+            TabBtn.TextColor3 = SelectedTheme.Accent 
+        end 
+        
+        Tab.UpdateCheck = CheckElements 
+        table.insert(Window.Tabs, Tab) -- Dimasukkan lebih awal agar terbaca sistem window
+        
+        function Tab:AddSection(Text) 
+            local Sec = Instance.new("TextLabel", ContentFrame) 
+            Sec.Size = UDim2New(1, 0, 0, 25) 
+            Sec.Text = Text
+            Sec.TextColor3 = SelectedTheme.Accent 
+            Sec.BackgroundTransparency = 1 
+            Sec.Font = Midnight.Font 
+            Sec.TextSize = 15 
+            Sec.TextXAlignment = Enum.TextXAlignment.Left 
+            Sec.ZIndex = 5 
+            CheckElements() 
+        end 
+        
+        function Tab:AddButton(BtnConfig) 
+            local Btn = Instance.new("TextButton", ContentFrame) 
+            Btn.Size = UDim2New(1, -5, 0, 40) 
+            Btn.BackgroundColor3 = SelectedTheme.Element 
+            Btn.Text = BtnConfig.Name or "Button" 
+            Btn.TextColor3 = FromRGB(240, 240, 240) 
+            Btn.Font = Midnight.Font 
+            Btn.TextSize = 16 
+            Btn.ZIndex = 5 
+            Instance.new("UICorner", Btn).CornerRadius = UDim.new(0, 6) 
+            
+            Btn.MouseButton1Click:Connect(function() 
+                TweenService:Create(Btn, TweenInfo.new(0.1), {BackgroundColor3 = SelectedTheme.Accent}):Play() 
+                task.wait(0.1) 
+                TweenService:Create(Btn, TweenInfo.new(0.1), {BackgroundColor3 = SelectedTheme.Element}):Play() 
+                if BtnConfig.Callback then BtnConfig.Callback() end 
+            end) 
+            CheckElements() 
+        end 
+        
+        function Tab:AddToggle(TglConfig) 
+            local Tgl = { State = TglConfig.Default or false } 
+            local Btn = Instance.new("TextButton", ContentFrame) 
+            Btn.Size = UDim2New(1, -5, 0, 40) 
+            Btn.BackgroundColor3 = SelectedTheme.Element 
+            Btn.Text = " " .. (TglConfig.Name or "Toggle") 
+            Btn.TextColor3 = FromRGB(240, 240, 240) 
+            Btn.Font = Midnight.Font 
+            Btn.TextSize = 16 
+            Btn.TextXAlignment = Enum.TextXAlignment.Left 
+            Btn.ZIndex = 5 
+            Instance.new("UICorner", Btn).CornerRadius = UDim.new(0, 6) 
+            
+            local Status = Instance.new("Frame", Btn) 
+            Status.Size = UDim2New(0, 28, 0, 16) 
+            Status.Position = UDim2New(1, -38, 0.5, -8) 
+            Status.BackgroundColor3 = Tgl.State and SelectedTheme.Accent or FromRGB(80, 80, 80) 
+            Status.ZIndex = 6 
+            Instance.new("UICorner", Status).CornerRadius = UDim.new(1, 0) 
+            
+            Btn.MouseButton1Click:Connect(function() 
+                Tgl.State = not Tgl.State 
+                TweenService:Create(Status, TweenInfo.new(0.2), {BackgroundColor3 = Tgl.State and SelectedTheme.Accent or FromRGB(80, 80, 80)}):Play() 
+                if TglConfig.Callback then TglConfig.Callback(Tgl.State) end 
+            end) 
+            CheckElements() 
+        end 
+        
+        function Tab:AddSlider(SldConfig) 
+            local Sld = { Min = SldConfig.Min or 0, Max = SldConfig.Max or 100, Val = SldConfig.Default or 50 } 
+            local SldName = SldConfig.Name or "Slider" 
+            local Frame = Instance.new("Frame", ContentFrame) 
+            Frame.Size = UDim2New(1, -5, 0, 55) 
+            Frame.BackgroundColor3 = SelectedTheme.Element 
+            Frame.ZIndex = 5 
+            Instance.new("UICorner", Frame).CornerRadius = UDim.new(0, 6) 
+            
+            local Label = Instance.new("TextLabel", Frame) 
+            Label.Size = UDim2New(1, -20, 0, 25) 
+            Label.Position = UDim2New(0, 10, 0, 4) 
+            Label.Text = SldName .. " : " .. tostring(Sld.Val) 
+            Label.TextColor3 = FromRGB(240, 240, 240) 
+            Label.BackgroundTransparency = 1 
+            Label.Font = Midnight.Font 
+            Label.TextSize = 15 
+            Label.TextXAlignment = Enum.TextXAlignment.Left 
+            Label.ZIndex = 6 
+            
+            local Track = Instance.new("TextButton", Frame) 
+            Track.Size = UDim2New(1, -20, 0, 8) 
+            Track.Position = UDim2New(0, 10, 0, 34) 
+            Track.BackgroundColor3 = FromRGB(60, 60, 60) 
+            Track.Text = "" 
+            Track.ZIndex = 6 
+            Instance.new("UICorner", Track) 
+            
+            local Bar = Instance.new("Frame", Track) 
+            Bar.Size = UDim2New((Sld.Val - Sld.Min)/(Sld.Max - Sld.Min), 0, 1, 0) 
+            Bar.BackgroundColor3 = SelectedTheme.Accent 
+            Bar.ZIndex = 7 
+            Instance.new("UICorner", Bar) 
+            
+            local isDragging = false 
+            local function UpdateSliderValue(input) 
+                local ratio = math.clamp((input.Position.X - Track.AbsolutePosition.X) / Track.AbsoluteSize.X, 0, 1) 
+                local newValue = math.floor(Sld.Min + (Sld.Max - Sld.Min) * ratio) 
+                Sld.Val = newValue 
+                Bar.Size = UDim2New(ratio, 0, 1, 0) 
+                Label.Text = SldName .. " : " .. tostring(Sld.Val) 
+                if SldConfig.Callback then SldConfig.Callback(Sld.Val) end 
+            end 
+            
+            Track.InputBegan:Connect(function(input) 
+                if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then 
+                    isDragging = true 
+                    UpdateSliderValue(input) 
+                end 
+            end) 
+            UserInputService.InputChanged:Connect(function(input) 
+                if isDragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then 
+                    UpdateSliderValue(input) 
+                end 
+            end) 
+            UserInputService.InputEnded:Connect(function(input) 
+                if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then 
+                    isDragging = false 
+                end 
+            end) 
+            CheckElements() 
+        end 
+        
+        function Tab:AddDropdown(DropConfig) 
+            local Drop = { Options = DropConfig.Options or {}, Current = DropConfig.Default or "", Open = false } 
+            local DropName = DropConfig.Name or "Dropdown" 
+            local Frame = Instance.new("Frame", ContentFrame) 
+            Frame.Size = UDim2New(1, -5, 0, 40) 
+            Frame.BackgroundColor3 = SelectedTheme.Element 
+            Frame.ClipsDescendants = true 
+            Frame.ZIndex = 5 
+            Instance.new("UICorner", Frame).CornerRadius = UDim.new(0, 6) 
+            
+            local Btn = Instance.new("TextButton", Frame) 
+            Btn.Size = UDim2New(1, 0, 0, 40) 
+            Btn.Text = " " .. DropName .. " [" .. Drop.Current .. "]" 
+            Btn.TextColor3 = FromRGB(240, 240, 240) 
+            Btn.BackgroundColor3 = SelectedTheme.Element 
+            Btn.TextXAlignment = Enum.TextXAlignment.Left 
+            Btn.Font = Midnight.Font 
+            Btn.TextSize = 16 
+            Btn.ZIndex = 6 
+            
+            local ItemList = Instance.new("Frame", Frame) 
+            ItemList.Size = UDim2New(1, 0, 1, -40) 
+            ItemList.Position = UDim2New(0, 0, 0, 40) 
+            ItemList.BackgroundTransparency = 1 
+            ItemList.ZIndex = 6 
+            local ItemLayout = Instance.new("UIListLayout", ItemList) 
+            
+            Btn.MouseButton1Click:Connect(function() 
+                Drop.Open = not Drop.Open 
+                local targetHeight = Drop.Open and (40 + (#Drop.Options * 28)) or 40 
+                TweenService:Create(Frame, TweenInfo.new(0.2), {Size = UDim2New(1, -5, 0, targetHeight)}):Play() 
+            end) 
+            
+            for _, opt in pairs(Drop.Options) do 
+                local OptBtn = Instance.new("TextButton", ItemList) 
+                OptBtn.Size = UDim2New(1, 0, 0, 28) 
+                OptBtn.BackgroundColor3 = SelectedTheme.Element 
+                OptBtn.Text = " " .. opt 
+                OptBtn.TextColor3 = FromRGB(170, 170, 170) 
+                OptBtn.Font = Midnight.Font 
+                OptBtn.TextSize = 14 
+                OptBtn.TextXAlignment = Enum.TextXAlignment.Left 
+                OptBtn.ZIndex = 7 
+                
+                OptBtn.MouseButton1Click:Connect(function() 
+                    Drop.Current = opt 
+                    Btn.Text = " " .. DropName .. " [" .. Drop.Current .. "]" 
+                    Drop.Open = false 
+                    TweenService:Create(Frame, TweenInfo.new(0.2), {Size = UDim2New(1, -5, 0, 40)}):Play() 
+                    if DropConfig.Callback then DropConfig.Callback(opt) end 
+                end) 
+            end 
+            CheckElements() 
+        end 
+        
+        function Tab:AddKeyBind(BindConfig) 
+            local Bind = { Key = BindConfig.KeyBind or Enum.KeyCode.Z } 
+            local Btn = Instance.new("TextButton", ContentFrame) 
+            Btn.Size = UDim2New(1, -5, 0, 40) 
+            Btn.BackgroundColor3 = SelectedTheme.Element 
+            Btn.Text = " " .. (BindConfig.Name or "KeyBind") 
+            Btn.TextColor3 = FromRGB(240, 240, 240) 
+            Btn.Font = Midnight.Font 
+            Btn.TextSize = 16 
+            Btn.TextXAlignment = Enum.TextXAlignment.Left 
+            Btn.ZIndex = 5 
+            Instance.new("UICorner", Btn).CornerRadius = UDim.new(0, 6) 
+            
+            local KeyLabel = Instance.new("TextLabel", Btn) 
+            KeyLabel.Size = UDim2New(0, 70, 0, 24) 
+            KeyLabel.Position = UDim2New(1, -80, 0.5, -12) 
+            KeyLabel.BackgroundColor3 = FromRGB(40, 40, 40) 
+            KeyLabel.Text = Bind.Key.Name 
+            KeyLabel.TextColor3 = SelectedTheme.Accent 
+            KeyLabel.Font = Midnight.Font 
+            KeyLabel.TextSize = 14 
+            KeyLabel.ZIndex = 6 
+            Instance.new("UICorner", KeyLabel) 
+            
+            UserInputService.InputBegan:Connect(function(input, gpe) 
+                if not gpe and input.KeyCode == Bind.Key then 
+                    if BindConfig.Callback then BindConfig.Callback() end 
+                end 
+            end) 
+            CheckElements() 
+        end 
+        
+        function Tab:AddInputBox(InputConfig) 
+            local BoxHeight = 45 
+            local BaseFrame = Instance.new("Frame", ContentFrame) 
+            BaseFrame.Size = UDim2New(1, -5, 0, BoxHeight) 
+            BaseFrame.BackgroundColor3 = SelectedTheme.Element 
+            BaseFrame.ZIndex = 5 
+            Instance.new("UICorner", BaseFrame).CornerRadius = UDim.new(0, 6) 
+            
+            local BoxLabel = Instance.new("TextLabel", BaseFrame) 
+            BoxLabel.Size = UDim2New(0.4, 0, 1, 0) 
+            BoxLabel.Position = UDim2New(0, 12, 0, 0) 
+            BoxLabel.BackgroundTransparency = 1 
+            BoxLabel.Text = InputConfig.Text or "Input" 
+            BoxLabel.TextColor3 = FromRGB(240, 240, 240) 
+            BoxLabel.Font = Midnight.Font 
+            BoxLabel.TextSize = 15 
+            BoxLabel.TextXAlignment = Enum.TextXAlignment.Left 
+            BoxLabel.ZIndex = 6 
+            
+            local TextBox = Instance.new("TextBox", BaseFrame) 
+            TextBox.Size = UDim2New(0.5, 0, 0, 28) 
+            TextBox.AnchorPoint = Vector2.new(1, 0.5) 
+            TextBox.Position = UDim2New(1, -12, 0.5, 0) 
+            TextBox.BackgroundColor3 = SelectedTheme.Background 
+            TextBox.Text = "" 
+            TextBox.PlaceholderText = InputConfig.PlaceHolder or "Type here..." 
+            TextBox.TextColor3 = FromRGB(255, 255, 255) 
+            TextBox.PlaceholderColor3 = FromRGB(120, 120, 120) 
+            TextBox.Font = Midnight.Font 
+            TextBox.TextSize = 14 
+            TextBox.ClipsDescendants = true 
+            TextBox.ZIndex = 6 
+            Instance.new("UICorner", TextBox).CornerRadius = UDim.new(0, 5) 
+            
+            TextBox.FocusLost:Connect(function(EnterPressed) 
+                if InputConfig.Callback then InputConfig.Callback(TextBox.Text, EnterPressed) end 
+            end) 
+            CheckElements() 
+        end 
+        
+        CheckElements()
+        return Tab 
+    end 
+    return Window 
+end 
+
+return Midnight

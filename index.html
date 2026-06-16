@@ -1,0 +1,2055 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>unknownBlox - Cloud Script Hub & Obfuscator Suite</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght=400;500&family=Inter:wght=400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --bg-main: #0a0a0c;
+            --bg-card: #121216;
+            --bg-nav: #16161c;
+            --accent-pink: #ff007f;
+            --accent-glow: rgba(255, 0, 127, 0.4);
+            --text-main: #ffffff;
+            --text-muted: #8a8a98;
+            --border-color: #22222a;
+            --bg-modal: #181822;
+            /* UI States */
+            --error-color: #e74c3c;
+            --success-color: #2ecc71;
+            --discord-color: #5865F2;
+            --youtube-color: #FF0000;
+        }
+
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box; 
+            font-family: 'Inter', sans-serif; 
+        }
+        
+        body { 
+            background-color: var(--bg-main); 
+            color: var(--text-main); 
+            min-height: 100vh; 
+            overflow-x: hidden; 
+        }
+        
+        .hidden { 
+            display: none !important; 
+        }
+
+        /* --- AUTH SCREEN --- */
+        .auth-wrapper { 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            min-height: 100vh; 
+            padding: 20px; 
+        }
+        
+        .auth-card { 
+            background-color: var(--bg-card); 
+            border: 1px solid var(--border-color); 
+            border-radius: 16px; 
+            width: 100%; 
+            max-width: 420px; 
+            padding: 40px 30px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5); 
+            text-align: center; 
+        }
+        
+        .auth-logo { 
+            font-size: 26px; 
+            font-weight: 700; 
+            margin-bottom: 30px; 
+        }
+        
+        .auth-logo span { 
+            color: var(--accent-pink); 
+            text-shadow: 0 0 10px var(--accent-glow); 
+        }
+        
+        .auth-card h3 { 
+            font-size: 20px; 
+            margin-bottom: 20px; 
+            text-align: left; 
+        }
+        
+        .auth-toggle-text { 
+            font-size: 13px; 
+            color: var(--text-muted); 
+            margin-top: 20px; 
+            cursor: pointer; 
+            transition: color 0.2s; 
+        }
+        
+        .auth-toggle-text span { 
+            color: var(--accent-pink); 
+            font-weight: 600; 
+        }
+
+        /* --- LAYOUT UTAMA --- */
+        .app-layout { 
+            display: flex; 
+            min-height: 100vh; 
+            position: relative; 
+        }
+
+        /* --- SIDEBAR MENU (FIXED SCROLLBAR HAMBURGER) --- */
+        .sidebar { 
+            width: 260px; 
+            background-color: var(--bg-nav); 
+            border-right: 1px solid var(--border-color); 
+            display: flex; 
+            flex-direction: column; 
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+            z-index: 1000; 
+            position: fixed; 
+            top: 0; 
+            bottom: 0; 
+            left: 0; 
+        }
+        
+        .sidebar-header { 
+            padding: 20px 24px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: space-between; 
+            border-bottom: 1px solid var(--border-color); 
+            flex-shrink: 0;
+        }
+        
+        .sidebar-logo { 
+            font-size: 20px; 
+            font-weight: 700; 
+        }
+        
+        .sidebar-logo span { 
+            color: var(--accent-pink); 
+            text-shadow: 0 0 10px var(--accent-glow); 
+        }
+        
+        /* Mengizinkan list menu di dalam hamburger sidebar agar bisa di-scroll jika overflow */
+        .sidebar-menu { 
+            list-style: none; 
+            padding: 20px 12px; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 8px; 
+            flex: 1; 
+            overflow-y: auto;
+        }
+
+        /* Kustomisasi scrollbar sidebar menu supaya tipis dan estetik */
+        .sidebar-menu::-webkit-scrollbar {
+            width: 4px;
+        }
+        .sidebar-menu::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .sidebar-menu::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 10px;
+        }
+        .sidebar-menu::-webkit-scrollbar-thumb:hover {
+            background: var(--accent-pink);
+        }
+        
+        .menu-item { 
+            display: flex; 
+            align-items: center; 
+            gap: 12px; 
+            padding: 12px 16px; 
+            border-radius: 8px; 
+            color: var(--text-muted); 
+            font-weight: 500; 
+            font-size: 14px; 
+            cursor: pointer; 
+            transition: all 0.2s; 
+            flex-shrink: 0;
+        }
+        
+        .menu-item:hover { 
+            background-color: rgba(255, 0, 127, 0.05); 
+            color: var(--text-main); 
+        }
+        
+        .menu-item.active { 
+            background-color: var(--accent-pink); 
+            color: var(--text-main); 
+            box-shadow: 0 4px 12px var(--accent-glow); 
+        }
+        
+        .menu-item i { 
+            width: 20px; 
+            font-size: 16px; 
+            text-align: center; 
+        }
+
+        .sidebar-footer { 
+            padding: 15px; 
+            border-top: 1px solid var(--border-color); 
+            display: flex; 
+            align-items: center; 
+            justify-content: space-between; 
+            background: rgba(0,0,0,0.1); 
+            flex-shrink: 0;
+        }
+        
+        .sb-user { 
+            display: flex; 
+            align-items: center; 
+            gap: 10px; 
+            font-size: 13px; 
+            font-weight: 600; 
+            max-width: 160px; 
+            overflow: hidden; 
+            text-overflow: ellipsis; 
+            white-space: nowrap; 
+        }
+        
+        .sb-user img { 
+            width: 28px; 
+            height: 28px; 
+            border-radius: 50%; 
+            border: 1px solid var(--border-color); 
+        }
+
+        /* Mobile Overlay */
+        .sidebar-overlay { 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            right: 0; 
+            bottom: 0; 
+            background: rgba(0, 0, 0, 0.5); 
+            backdrop-filter: blur(2px); 
+            z-index: 999; 
+            display: none; 
+        }
+        
+        body.sidebar-open .sidebar-overlay { 
+            display: block; 
+        }
+
+        /* --- MAIN CONTENT AREA --- */
+        .main-content { 
+            flex: 1; 
+            margin-left: 260px; 
+            display: flex; 
+            flex-direction: column; 
+            min-height: 100vh; 
+            transition: margin-left 0.3s; 
+        }
+        
+        /* --- NAVIGATION BAR --- */
+        nav { 
+            background-color: var(--bg-nav); 
+            border-bottom: 1px solid var(--border-color); 
+            display: flex; 
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 30px; 
+            position: sticky; 
+            top: 0; 
+            z-index: 900; 
+            height: 70px;
+        }
+        
+        .nav-left { 
+            display: flex; 
+            align-items: center; 
+            gap: 15px; 
+        }
+        
+        .hamburger-btn { 
+            background: none; 
+            border: none; 
+            color: var(--text-main); 
+            font-size: 20px; 
+            cursor: pointer; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            width: 36px; 
+            height: 36px; 
+            border-radius: 6px; 
+            transition: background 0.2s; 
+        }
+        
+        .hamburger-btn:hover { 
+            background: var(--bg-card); 
+        }
+        
+        .nav-page-title { 
+            font-size: 20px; 
+            font-weight: 700; 
+            margin-left: 5px; 
+        }
+        
+        .nav-right { 
+            display: flex; 
+            align-items: center; 
+            gap: 15px; 
+        }
+        
+        .btn-post { 
+            background-color: var(--accent-pink); 
+            color: var(--text-main); 
+            border: none; 
+            padding: 10px 18px; 
+            border-radius: 8px; 
+            font-weight: 600; 
+            cursor: pointer; 
+            display: flex; 
+            align-items: center; 
+            gap: 8px; 
+            font-size: 13px; 
+            transition: 0.2s; 
+        }
+        
+        .btn-post:hover { 
+            opacity: 0.9; 
+            box-shadow: 0 0 12px var(--accent-glow); 
+        }
+        
+        .btn-logout { 
+            background: none; 
+            border: 1px solid var(--border-color); 
+            color: #ff3333; 
+            padding: 9px 12px; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            font-size: 14px; 
+        }
+        
+        .btn-logout:hover { 
+            background: rgba(255, 51, 51, 0.1); 
+        }
+
+        /* Search Bar Khusus di View Script Hub */
+        .search-wrapper-block {
+            margin-bottom: 25px;
+            width: 100%;
+        }
+
+        .search-container { 
+            background-color: var(--bg-card); 
+            border: 1px solid var(--border-color); 
+            border-radius: 8px; 
+            display: flex; 
+            align-items: center; 
+            padding: 12px 18px; 
+            width: 100%; 
+            transition: 0.3s; 
+        }
+        
+        .search-container:focus-within { 
+            border-color: var(--accent-pink); 
+            box-shadow: 0 0 8px var(--accent-glow); 
+        }
+        
+        .search-container input { 
+            background: none; 
+            border: none; 
+            color: var(--text-main); 
+            outline: none; 
+            width: 100%; 
+            margin-left: 12px; 
+            font-size: 14px; 
+        }
+        
+        .search-container i { 
+            color: var(--text-muted); 
+        }
+
+        /* --- CONTAINERS VIRTUAL --- */
+        .view-section { 
+            padding: 40px 30px; 
+            width: 100%; 
+            max-width: 1400px; 
+            margin: 0 auto; 
+            flex: 1; 
+        }
+
+        /* --- TOAST --- */
+        #toast { 
+            position: fixed; 
+            bottom: 20px; 
+            right: 20px; 
+            background-color: #4cd137; 
+            color: #fff; 
+            padding: 12px 25px; 
+            border-radius: 8px; 
+            font-weight: 600; 
+            display: flex; 
+            align-items: center; 
+            gap: 10px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5); 
+            transform: translateY(100px); 
+            opacity: 0; 
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+            z-index: 2500; 
+        }
+        
+        #toast.show { 
+            transform: translateY(0); 
+            opacity: 1; 
+        }
+
+        /* --- SCRIPT HUB --- */
+        .section-header { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            margin-bottom: 25px; 
+        }
+        
+        .section-title { 
+            font-size: 22px; 
+            font-weight: 600; 
+            display: flex; 
+            align-items: center; 
+            gap: 10px; 
+        }
+        
+        .section-title i { 
+            color: var(--accent-pink); 
+        }
+        
+        .script-count { 
+            font-size: 14px; 
+            color: var(--text-muted); 
+            background: var(--bg-card); 
+            padding: 4px 12px; 
+            border-radius: 20px; 
+            border: 1px solid var(--border-color); 
+        }
+        
+        .script-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); 
+            gap: 25px; 
+        }
+        
+        .empty-state { 
+            grid-column: 1 / -1; 
+            text-align: center; 
+            padding: 60px 20px; 
+            background-color: var(--bg-card); 
+            border: 1px dashed var(--border-color); 
+            border-radius: 14px; 
+            color: var(--text-muted); 
+        }
+        
+        .empty-state i { 
+            font-size: 48px; 
+            margin-bottom: 15px; 
+            color: #2d2d3d; 
+        }
+        
+        .script-card { 
+            background-color: var(--bg-card); 
+            border: 1px solid var(--border-color); 
+            border-radius: 14px; 
+            padding: 22px; 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: space-between; 
+            transition: transform 0.2s, border-color 0.2s; 
+            position: relative; 
+        }
+        
+        .script-card:hover { 
+            transform: translateY(-3px); 
+            border-color: var(--accent-pink); 
+        }
+        
+        .btn-delete-script { 
+            position: absolute; 
+            top: 18px; 
+            right: 18px; 
+            background: none; 
+            border: none; 
+            color: #ff3333; 
+            cursor: pointer; 
+            font-size: 14px; 
+            opacity: 0.6; 
+            transition: 0.2s; 
+            padding: 5px; 
+        }
+        
+        .btn-delete-script:hover { 
+            opacity: 1; 
+            transform: scale(1.1); 
+        }
+        
+        .card-top { 
+            margin-bottom: 15px; 
+        }
+        
+        .card-header { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            margin-bottom: 12px; 
+            width: 80%; 
+        }
+        
+        .game-badge { 
+            background-color: rgba(255, 0, 127, 0.1); 
+            border: 1px solid rgba(255, 0, 127, 0.2); 
+            padding: 5px 12px; 
+            border-radius: 6px; 
+            font-size: 12px; 
+            font-weight: 600; 
+            color: var(--accent-pink); 
+        }
+        
+        .script-title { 
+            font-size: 17px; 
+            font-weight: 700; 
+            margin-bottom: 8px; 
+            color: var(--text-main); 
+            padding-right: 20px; 
+        }
+        
+        .script-desc { 
+            font-size: 13px; 
+            color: var(--text-muted); 
+            line-height: 1.5; 
+            margin-bottom: 15px; 
+            display: -webkit-box; 
+            -webkit-line-clamp: 2; 
+            -webkit-box-orient: vertical; 
+            overflow: hidden; 
+        }
+        
+        .tags-wrapper { 
+            display: flex; 
+            gap: 6px; 
+            flex-wrap: wrap; 
+        }
+        
+        .tag { 
+            font-size: 11px; 
+            background: #1b1b22; 
+            padding: 3px 8px; 
+            border-radius: 4px; 
+            color: #b5b5c3; 
+        }
+        
+        .btn-get { 
+            width: 100%; 
+            margin-top: 15px; 
+            background: #16161c; 
+            border: 1px solid var(--border-color); 
+            color: var(--text-main); 
+            padding: 10px; 
+            border-radius: 8px; 
+            font-size: 14px; 
+            font-weight: 600; 
+            cursor: pointer; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            gap: 8px; 
+            transition: 0.2s; 
+        }
+        
+        .btn-get:hover { 
+            background: var(--accent-pink); 
+            border-color: var(--accent-pink); 
+            box-shadow: 0 0 10px var(--accent-glow); 
+        }
+        
+        .card-footer { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            border-top: 1px solid var(--border-color); 
+            padding-top: 15px; 
+            margin-top: 20px; 
+        }
+        
+        .uploader { 
+            display: flex; 
+            align-items: center; 
+            gap: 8px; 
+            font-size: 12px; 
+        }
+        
+        .uploader img { 
+            width: 26px; 
+            height: 26px; 
+            border-radius: 50%; 
+            border: 1px solid var(--border-color); 
+        }
+        
+        .stats { 
+            display: flex; 
+            gap: 12px; 
+            font-size: 12px; 
+            color: var(--text-muted); 
+        }
+        
+        .stats span { 
+            display: flex; 
+            align-items: center; 
+            gap: 4px; 
+        }
+
+        /* --- OBFUSCATOR --- */
+        .obf-container { 
+            display: flex; 
+            flex-direction: column; 
+            gap: 20px; 
+            width: 100%; 
+        }
+        
+        .obf-control-panel { 
+            display: flex; 
+            flex-direction: column; 
+            gap: 15px; 
+            background-color: var(--bg-card); 
+            padding: 20px; 
+            border-radius: 12px; 
+            border: 1px solid var(--border-color); 
+        }
+        
+        .obf-button-row { 
+            display: flex; 
+            gap: 15px; 
+            width: 100%; 
+            justify-content: flex-end; 
+        }
+        
+        .obf-button-row .obf-btn { 
+            flex: 0 1 auto; 
+        }
+        
+        .obf-info-footer { 
+            display: flex; 
+            flex-direction: column; 
+            align-items: flex-end; 
+            gap: 12px; 
+            border-top: 1px solid var(--border-color); 
+            padding-top: 15px; 
+            width: 100%; 
+        }
+        
+        .obf-info-text { 
+            font-size: 0.85rem; 
+            color: var(--text-muted); 
+            text-align: right; 
+            line-height: 1.4; 
+        }
+        
+        .obf-info-text span { 
+            color: var(--accent-pink); 
+            font-weight: 600; 
+        }
+        
+        .obf-social-links { 
+            display: flex; 
+            gap: 15px; 
+        }
+        
+        .obf-social-btn { 
+            text-decoration: none; 
+            font-weight: 600; 
+            font-size: 0.9rem; 
+            display: inline-flex; 
+            align-items: center; 
+            gap: 8px; 
+            padding: 6px 14px; 
+            border-radius: 4px; 
+            transition: all 0.2s; 
+            color: white; 
+        }
+        
+        .obf-social-btn.discord { 
+            background-color: var(--discord-color); 
+        }
+        
+        .obf-social-btn.discord:hover { 
+            background-color: #4752c4; 
+            box-shadow: 0 0 10px rgba(88, 101, 242, 0.4); 
+        }
+        
+        .obf-social-btn.youtube { 
+            background-color: var(--youtube-color); 
+        }
+        
+        .obf-social-btn.youtube:hover { 
+            background-color: #cc0000; 
+            box-shadow: 0 0 10px rgba(255, 0, 0, 0.4); 
+        }
+        
+        .obf-workspace { 
+            display: grid; 
+            grid-template-columns: 1fr 1fr; 
+            gap: 20px; 
+        }
+        
+        .obf-editor-box { 
+            display: flex; 
+            flex-direction: column; 
+            background-color: var(--bg-card); 
+            border: 1px solid var(--border-color); 
+            border-radius: 8px; 
+            overflow: hidden; 
+        }
+        
+        .obf-box-header { 
+            background-color: rgba(0, 0, 0, 0.3); 
+            padding: 12px 15px; 
+            font-weight: 600; 
+            color: white; 
+            border-bottom: 1px solid var(--border-color); 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+        }
+        
+        .obf-textarea { 
+            width: 100%; 
+            height: 480px; 
+            background-color: #0b0c10; 
+            border: none; 
+            color: #7efc00; 
+            font-family: 'Fira Code', monospace; 
+            font-size: 0.9rem; 
+            padding: 15px; 
+            resize: none; 
+            outline: none; 
+            line-height: 1.5; 
+        }
+        
+        .obf-textarea::placeholder { 
+            color: #3a4558; 
+        }
+        
+        .obf-btn { 
+            background-color: #2d3748; 
+            color: white; 
+            border: none; 
+            padding: 10px 18px; 
+            border-radius: 6px; 
+            font-weight: 600; 
+            cursor: pointer; 
+            display: inline-flex; 
+            align-items: center; 
+            gap: 8px; 
+            transition: all 0.2s; 
+            font-size: 13px; 
+        }
+        
+        .obf-btn:hover { 
+            background-color: #4a5568; 
+        }
+        
+        .obf-btn-primary { 
+            background-color: var(--accent-pink); 
+        }
+        
+        .obf-btn-primary:hover { 
+            background-color: #e0006c; 
+            box-shadow: 0 0 10px var(--accent-glow); 
+        }
+        
+        .obf-btn-success { 
+            background-color: #27ae60; 
+        }
+        
+        .obf-btn-success:hover { 
+            background-color: #2ecc71; 
+        }
+        
+        #file-input { 
+            display: none; 
+        }
+
+        /* --- API KEYS & KEY SYSTEM --- */
+        .panel-container { 
+            background: var(--bg-card); 
+            border: 1px solid var(--border-color); 
+            border-radius: 14px; 
+            padding: 30px; 
+            margin-bottom: 25px; 
+            box-shadow: 0 6px 20px rgba(0,0,0,0.2); 
+        }
+        
+        .panel-title { 
+            font-size: 18px; 
+            font-weight: 600; 
+            margin-bottom: 15px; 
+            display: flex; 
+            align-items: center; 
+            gap: 10px; 
+            color: white; 
+        }
+        
+        .panel-title i { 
+            color: var(--accent-pink); 
+        }
+        
+        .api-counter { 
+            font-size: 13px; 
+            color: var(--text-muted); 
+            margin-bottom: 15px; 
+            background: rgba(255,0,127,0.05); 
+            padding: 8px 12px; 
+            border-radius: 6px; 
+            display: inline-block; 
+            border: 1px dashed rgba(255,0,127,0.2); 
+        }
+        
+        .key-list-table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            margin-top: 15px; 
+            text-align: left; 
+        }
+        
+        .key-list-table th, .key-list-table td { 
+            padding: 12px 15px; 
+            border-bottom: 1px solid var(--border-color); 
+            font-size: 14px; 
+        }
+        
+        .key-list-table th { 
+            color: var(--text-muted); 
+            font-weight: 600; 
+            background: rgba(0,0,0,0.2); 
+        }
+        
+        .key-list-table td code { 
+            font-family: 'Fira Code', monospace; 
+            color: #4cd137; 
+            background: #0b0c10; 
+            padding: 4px 8px; 
+            border-radius: 4px; 
+            font-size: 12px; 
+            border: 1px solid #1a1a24; 
+        }
+        
+        .key-list-table td .link-code { 
+            color: #00d2d3; 
+        }
+        
+        .btn-action-icon { 
+            background: none; 
+            border: none; 
+            color: var(--text-muted); 
+            cursor: pointer; 
+            font-size: 14px; 
+            padding: 4px; 
+            transition: 0.2s; 
+        }
+        
+        .btn-action-icon:hover { 
+            color: #ff3333; 
+        }
+
+        .auth-box-display { 
+            background: #0b0c10; 
+            border: 1px dashed var(--border-color); 
+            border-radius: 10px; 
+            padding: 20px; 
+            margin-top: 25px; 
+            text-align: left; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 10px; 
+        }
+        
+        .display-url-box { 
+            background: var(--bg-main); 
+            border: 1px solid var(--border-color); 
+            border-radius: 6px; 
+            padding: 12px; 
+            font-family: 'Fira Code', monospace; 
+            font-size: 13px; 
+            color: #ff007f; 
+            word-break: break-all; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            gap: 10px; 
+        }
+        
+        .btn-copy-small { 
+            background: #1c1c24; 
+            border: 1px solid var(--border-color); 
+            color: white; 
+            padding: 5px 10px; 
+            border-radius: 4px; 
+            cursor: pointer; 
+            font-size: 12px; 
+        }
+        
+        .btn-copy-small:hover { 
+            background: var(--accent-pink); 
+            border-color: var(--accent-pink); 
+        }
+
+        /* --- ACCOUNT SETTINGS & CUSTOM FEATURES --- */
+        .settings-card { 
+            background: var(--bg-card); 
+            border: 1px solid var(--border-color); 
+            border-radius: 14px; 
+            max-width: 600px; 
+            width: 100%; 
+            padding: 30px; 
+            margin: 0 auto; 
+            box-shadow: 0 8px 24px rgba(0,0,0,0.3); 
+        }
+        
+        .settings-card h3 { 
+            font-size: 18px; 
+            margin-bottom: 20px; 
+            border-bottom: 1px solid var(--border-color); 
+            padding-bottom: 10px; 
+            color: white; 
+            display: flex; 
+            align-items: center; 
+            gap: 8px; 
+            }
+        
+        .settings-card h3 i { 
+            color: var(--accent-pink); 
+        }
+        
+        .settings-row { 
+            margin-bottom: 20px; 
+        }
+        
+        .btn-danger-zone { 
+            background-color: #ff3333; 
+            color: white; 
+            font-weight: 600; 
+            border: none; 
+            padding: 12px 20px; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            width: 100%; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            gap: 8px; 
+            transition: 0.2s; 
+        }
+        
+        .btn-danger-zone:hover { 
+            background-color: #cc0000; 
+            box-shadow: 0 0 10px rgba(255,51,51,0.3); 
+        }
+
+        /* --- MODAL DIALOGS --- */
+        .modal-overlay { 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            background: rgba(0, 0, 0, 0.75); 
+            backdrop-filter: blur(4px); 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            z-index: 1500; 
+            opacity: 0; 
+            pointer-events: none; 
+            transition: opacity 0.3s ease; 
+        }
+        
+        .modal-overlay.active { 
+            opacity: 1; 
+            pointer-events: auto; 
+        }
+        
+        .modal-box { 
+            background-color: var(--bg-modal); 
+            border: 1px solid var(--border-color); 
+            border-radius: 16px; 
+            width: 90%; 
+            max-width: 500px; 
+            padding: 30px; 
+            position: relative; 
+            transform: scale(0.9); 
+            transition: transform 0.3s ease; 
+        }
+        
+        .modal-overlay.active .modal-box { 
+            transform: scale(1); 
+        }
+        
+        .modal-header { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            margin-bottom: 20px; 
+        }
+        
+        .modal-title { 
+            font-size: 20px; 
+            font-weight: 700; 
+            display: flex; 
+            align-items: center; 
+            gap: 10px; 
+        }
+        
+        .modal-title span { 
+            color: var(--accent-pink); 
+        }
+        
+        .btn-close-modal { 
+            background: none; 
+            border: none; 
+            color: var(--text-muted); 
+            font-size: 24px; 
+            cursor: pointer; 
+            line-height: 1; 
+            padding: 5px; 
+        }
+        
+        .btn-close-modal:hover { 
+            color: #ff3333; 
+        }
+        
+        .form-group { 
+            margin-bottom: 15px; 
+            text-align: left; 
+        }
+        
+        .form-group label { 
+            display: block; 
+            font-size: 13px; 
+            font-weight: 500; 
+            color: var(--text-muted); 
+            margin-bottom: 6px; 
+        }
+        
+        .form-group input, .form-group textarea, .form-group select { 
+            width: 100%; 
+            background-color: var(--bg-main); 
+            border: 1px solid var(--border-color); 
+            border-radius: 8px; 
+            padding: 10px 14px; 
+            color: white; 
+            outline: none; 
+            font-size: 14px; 
+        }
+        
+        .form-group input:focus, .form-group textarea:focus, .form-group select:focus { 
+            border-color: var(--accent-pink); 
+        }
+        
+        .action-row { 
+            display: flex; 
+            gap: 15px; 
+            margin-top: 10px; 
+        }
+        
+        .btn-modal-action { 
+            flex: 1; 
+            padding: 14px; 
+            border-radius: 10px; 
+            font-size: 15px; 
+            font-weight: 600; 
+            cursor: pointer; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            gap: 8px; 
+            border: none; 
+            color: white; 
+            transition: 0.2s; 
+        }
+        
+        .btn-modal-copy { 
+            background-color: var(--accent-pink); 
+        }
+        
+        .btn-modal-copy:hover { 
+            box-shadow: 0 0 15px var(--accent-glow); 
+            opacity: 0.9; 
+        }
+        
+        .btn-modal-download { 
+            background-color: #23232e; 
+            border: 1px solid var(--border-color); 
+        }
+        
+        .btn-modal-download:hover { 
+            background-color: #2d2d3d; 
+            border-color: var(--text-muted); 
+        }
+        
+        .btn-submit-script { 
+            width: 100%; 
+            background-color: var(--accent-pink); 
+            color: white; 
+            border: none; 
+            padding: 12px; 
+            border-radius: 8px; 
+            font-weight: 700; 
+            font-size: 15px; 
+            cursor: pointer; 
+            margin-top: 10px; 
+        }
+        
+        .preview-source { 
+            background: #0d0d11; 
+            border: 1px solid var(--border-color); 
+            padding: 12px; 
+            border-radius: 8px; 
+            font-family: monospace; 
+            font-size: 12px; 
+            color: #4cd137; 
+            max-height: 120px; 
+            overflow-y: auto; 
+            white-space: pre-wrap; 
+            margin-bottom: 20px; 
+        }
+
+        /* --- RESPONSIVE ADJUSTMENTS --- */
+        body.sidebar-closed .sidebar { 
+            transform: translateX(-260px); 
+        }
+        
+        body.sidebar-closed .main-content { 
+            margin-left: 0; 
+        }
+
+        @media (max-width: 992px) {
+            .sidebar { 
+                transform: translateX(-260px); 
+            }
+            .main-content { 
+                margin-left: 0 !important; 
+            }
+            body.sidebar-open .sidebar { 
+                transform: translateX(0); 
+            }
+            .obf-workspace { 
+                grid-template-columns: 1fr; 
+            }
+        }
+
+        @media (max-width: 768px) {
+            nav { 
+                padding: 15px; 
+            }
+            .view-section { 
+                padding: 20px 15px; 
+            }
+            .obf-button-row { 
+                justify-content: space-between; 
+            }
+            .obf-button-row .obf-btn { 
+                flex: 1; 
+                text-align: center; 
+                justify-content: center; 
+            }
+            .obf-info-footer { 
+                align-items: center; 
+            }
+            .obf-info-text { 
+                text-align: center; 
+            }
+            .obf-social-links { 
+                width: 100%; 
+            }
+            .obf-social-btn { 
+                flex: 1; 
+                justify-content: center; 
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="toast">Action Completed!</div>
+
+    <div id="authScreen" class="auth-wrapper">
+        <div class="auth-card">
+            <div class="auth-logo"><i class="fa-solid fa-cubes"></i> unknown<span>Blox</span></div>
+            
+            <div id="registerFormContainer">
+                <h3>Create Account</h3>
+                <form id="registerForm">
+                    <div class="form-group">
+                        <label>Username</label>
+                        <input type="text" id="regUsername" placeholder="e.g., unknown6789041" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Email Address</label>
+                        <input type="email" id="regEmail" placeholder="name@email.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Password</label>
+                        <input type="password" id="regPassword" placeholder="••••••••" required>
+                    </div>
+                    <button type="submit" class="btn-submit-script">Sign Up</button>
+                </form>
+                <div class="auth-toggle-text" id="toLoginBtn">Already have an account? <span>Login here</span></div>
+            </div>
+
+            <div id="loginFormContainer" class="hidden">
+                <h3>Welcome Back</h3>
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label>Username</label>
+                        <input type="text" id="loginUsername" placeholder="Enter your username" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Password</label>
+                        <input type="password" id="loginPassword" placeholder="••••••••" required>
+                    </div>
+                    <button type="submit" class="btn-submit-script">Sign In</button>
+                </form>
+                <div class="auth-toggle-text" id="toRegisterBtn">Don't have an account? <span>Register now</span></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="mainPage" class="hidden app-layout">
+        <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+        <aside class="sidebar" id="appSidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo"><i class="fa-solid fa-cubes"></i> unknown<span>Blox</span></div>
+            </div>
+            
+            <ul class="sidebar-menu">
+                <li class="menu-item active" data-target="scriptHubSection" onclick="switchView(this)">
+                    <i class="fa-solid fa-fire"></i> Script Hub
+                </li>
+                <li class="menu-item" data-target="executorsSection" onclick="switchView(this)">
+                    <i class="fa-solid fa-terminal"></i> Executors
+                </li>
+                <li class="menu-item" data-target="obfuscatorSection" onclick="switchView(this)">
+                    <i class="fa-solid fa-shield-halved"></i> Obfuscator
+                </li>
+                <li class="menu-item" data-target="apiKeysSection" onclick="switchView(this)">
+                    <i class="fa-solid fa-key"></i> API Keys
+                </li>
+                <li class="menu-item" data-target="keySystemSection" onclick="switchView(this)">
+                    <i class="fa-solid fa-link"></i> Key System
+                </li>
+                <li class="menu-item" id="menuAccountSettings" data-target="settingsSection" onclick="switchView(this)">
+                    <i class="fa-solid fa-user-gear"></i> Account Settings
+                </li>
+            </ul>
+            
+            <div class="sidebar-footer">
+                <div class="sb-user">
+                    <img src="https://api.dicebear.com/7.x/bottts/svg?seed=Guest" id="sidebarAvatar" alt="avatar">
+                    <span id="sidebarUsername">Guest</span>
+                </div>
+            </div>
+        </aside>
+
+        <div class="main-content">
+            <nav>
+                <div class="nav-left">
+                    <button class="hamburger-btn" id="toggleSidebarBtn" title="Toggle Sidebar">
+                        <i class="fa-solid fa-bars"></i>
+                    </button>
+                    <div class="nav-page-title" id="navPageTitle">Script Hub</div>
+                </div>
+
+                <div class="nav-right">
+                    <button class="btn-post" id="openPostModalBtn">
+                        <i class="fa-solid fa-plus"></i> Post Script
+                    </button>
+                    <button class="btn-logout" onclick="handleLogout()" title="Logout Platform">
+                        <i class="fa-solid fa-right-from-bracket"></i>
+                    </button>
+                </div>
+            </nav>
+
+            <main class="view-section" id="scriptHubSection">
+                <div class="search-wrapper-block">
+                    <div class="search-container" id="navSearchWrapper">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <input type="text" id="searchInput" placeholder="Search by script title or game...">
+                    </div>
+                </div>
+
+                <div class="section-header">
+                    <h2 class="section-title"><i class="fa-solid fa-database"></i> Script Hub List</h2>
+                    <span class="script-count" id="scriptCount">Showing 0 Scripts.</span>
+                </div>
+                <div class="script-grid" id="scriptGrid"></div>
+            </main>
+
+            <main class="view-section hidden" id="executorsSection">
+                <div class="section-header">
+                    <h2 class="section-title"><i class="fa-solid fa-terminal"></i> Exploits & Executors</h2>
+                    <span class="script-count">Android Terminal Engines</span>
+                </div>
+                
+                <div class="script-grid">
+                    <div class="script-card">
+                        <div class="card-top">
+                            <div class="card-header">
+                                <span class="game-badge" style="background-color:rgba(39, 174, 96, 0.1); border-color:rgba(39,174,96,0.2); color:#2ecc71;">Active</span>
+                            </div>
+                            <h4 class="script-title">Delta Executor</h4>
+                            <p class="script-desc">One of the most popular Android exploit engines with stable performance and a user-friendly UI to execute high-level Luau scripts.</p>
+                            <div class="tags-wrapper">
+                                <span class="tag">Android</span>
+                                <span class="tag">Delta Team</span>
+                                <span class="tag">Free</span>
+                            </div>
+                        </div>
+                        <div>
+                            <a href="https://delta.filenetwork.vip/android.html" target="_blank" style="text-decoration: none;">
+                                <button class="btn-get" style="background:#1b2838; border-color:#2a475e;">
+                                    <i class="fa-solid fa-arrow-up-right-from-square"></i> Open Official Link
+                                </button>
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="script-card">
+                        <div class="card-top">
+                            <div class="card-header">
+                                <span class="game-badge" style="background-color:rgba(52, 152, 219, 0.1); border-color:rgba(52, 152, 219, 0.2); color:#3498db;">Direct APK</span>
+                            </div>
+                            <h4 class="script-title">Fluxus Executor</h4>
+                            <p class="script-desc">Legendary exploit engine based on ARM64 v701. Click the button below to directly download the installation package file APK instantly.</p>
+                            <div class="tags-wrapper">
+                                <span class="tag">v701</span>
+                                <span class="tag">ARM64</span>
+                                <span class="tag">APK Direct</span>
+                            </div>
+                        </div>
+                        <div>
+                            <a href="https://files.fluxus-team.net/FluxusZ.ARM64.V701.apk" download style="text-decoration: none;">
+                                <button class="btn-get" style="background:#2c3e50; border-color:#34495e;">
+                                    <i class="fa-solid fa-cloud-arrow-down"></i> Download APK Direct
+                                </button>
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="script-card" style="border: 1px dashed var(--border-color); opacity: 0.5; justify-content: center; align-items: center; text-align: center;">
+                        <div style="padding: 20px 0;">
+                            <i class="fa-solid fa-hourglass-half" style="font-size: 32px; color: var(--text-muted); margin-bottom: 12px;"></i>
+                            <h4 style="color: var(--text-muted); font-weight:600;">Coming Soon Slot</h4>
+                            <p style="font-size: 12px; color: var(--text-muted); max-width: 200px; margin: 5px auto 0;">The next update will be placed here directly by the administrator.</p>
+                        </div>
+                    </div>
+                </div>
+            </main>
+
+            <main class="view-section hidden" id="obfuscatorSection">
+                <div class="obf-container">
+                    <div class="obf-control-panel">
+                        <div class="obf-button-row">
+                            <input type="file" id="file-input" accept=".lua,.txt">
+                            <button class="obf-btn" onclick="document.getElementById('file-input').click()">
+                                <i class="fa-solid fa-file-upload"></i> Upload Script
+                            </button>
+                            <button class="obf-btn" onclick="obfuscateScript()">
+                                <i class="fa-solid fa-wand-magic-sparkles"></i> Obfuscate
+                            </button>
+                        </div>
+                        <div class="obf-info-footer">
+                            <div class="obf-info-text">
+                                Anonymous Obfuscator was created in 2026 by the <span>Anonymous Team</span>.
+                            </div>
+                            <div class="obf-social-links">
+                                <a href="https://discord.gg/m4CscU86t" target="_blank" class="obf-social-btn discord">
+                                    <i class="fa-brands fa-discord"></i> Discord
+                                </a>
+                                <a href="https://www.youtube.com/@AnonymousTeam-Free" target="_blank" class="obf-social-btn youtube">
+                                    <i class="fa-brands fa-youtube"></i> YouTube
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="obf-workspace">
+                        <div class="obf-editor-box">
+                            <div class="obf-box-header"><span>Source Code</span><i class="fa-solid fa-code"></i></div>
+                            <textarea id="input-script" class="obf-textarea" placeholder="-- Paste or type your Luau script here..."></textarea>
+                        </div>
+                        <div class="obf-editor-box">
+                            <div class="obf-box-header">
+                                <span>Obfuscated Output</span>
+                                <div style="display: flex; gap: 8px;">
+                                    <button class="obf-btn obf-btn-success" style="padding: 4px 10px; font-size: 0.8rem;" onclick="copyObfuscatedToClipboard()"><i class="fa-solid fa-copy"></i> Copy</button>
+                                    <button class="obf-btn" style="padding: 4px 10px; font-size: 0.8rem;" onclick="downloadObfuscatedScript()"><i class="fa-solid fa-download"></i> Download</button>
+                                </div>
+                            </div>
+                            <textarea id="output-script" class="obf-textarea" placeholder="The protected script output will appear here..." readonly></textarea>
+                        </div>
+                    </div>
+                </div>
+            </main>
+
+            <main class="view-section hidden" id="apiKeysSection">
+                <div class="panel-container">
+                    <div class="panel-title"><i class="fa-solid fa-key"></i> Automated Key System API Generator</div>
+                    <div class="api-counter" id="apiLimitText">Hourly Rate Limit: 0 / 10 generated this hour</div>
+                    <p style="font-size: 14px; color: var(--text-muted); margin-bottom: 20px;">
+                        Generate cryptographic application keys to power your internal game scripts or custom system hubs. All keys are verified unique.
+                    </p>
+                    <button class="btn-submit-script" style="margin-top:0; width:auto; padding:12px 25px;" onclick="generateUserApiKey()">
+                        <i class="fa-solid fa-gear"></i> Generate Unique Key
+                    </button>
+                </div>
+                <div class="panel-container">
+                    <div class="panel-title"><i class="fa-solid fa-list-check"></i> Active Generated Keys</div>
+                    <div style="overflow-x: auto;">
+                        <table class="key-list-table">
+                            <thead>
+                                <tr>
+                                    <th>API Key String</th>
+                                    <th>Created Timestamp</th>
+                                    <th style="width: 80px; text-align: center;">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="apiKeysTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </main>
+
+            <main class="view-section hidden" id="keySystemSection">
+                <div class="panel-container" style="max-width: 650px; margin: 0 auto;">
+                    <div class="panel-title"><i class="fa-solid fa-link"></i> Free Key Link Generator Portal</div>
+                    <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 25px;">
+                        Choose a provider system to create monetization gateways automatically.
+                    </p>
+                    <div class="form-group">
+                        <label>Select Free Gateway Provider</label>
+                        <select id="gatewayProviderSelect">
+                            <option value="https://linkvertise.com/free-gateway/open?url=">Linkvertise (Free Plan)</option>
+                            <option value="https://lootlabs.gg/api/gateway?link=">LootLabs (Free Gateway)</option>
+                            <option value="https://pastebin.com/raw/bypass?id=">Pastebin Raw Redirect</option>
+                        </select>
+                    </div>
+                    <button class="btn-submit-script" style="margin-top:10px;" onclick="generateKeySystemLink()">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i> Generate Monetized Key Link
+                    </button>
+                    <div class="auth-box-display">
+                        <div style="font-size: 14px; color: var(--text-muted); font-weight:600;">Monetized Active URL Output:</div>
+                        <div class="display-url-box" id="urlOutputField">
+                            <span>https://lootlabs.gg/api/gateway?link=...waiting_generation...</span>
+                            <button class="btn-copy-small" onclick="copyGeneratedLinkToClipboard()">Copy</button>
+                        </div>
+                    </div>
+                </div>
+            </main>
+
+            <main class="view-section hidden" id="settingsSection">
+                <div class="settings-card">
+                    <h3><i class="fa-solid fa-user-shield"></i> Security Dashboard</h3>
+                    <div class="settings-row">
+                        <p style="font-size: 14px; color: var(--text-muted); margin-bottom: 15px;">
+                            Deleting your profile credentials removes active link permissions immediately from unknownBlox network databases.
+                        </p>
+                        <button class="btn-danger-zone" onclick="handleDeleteAccount()">
+                            <i class="fa-solid fa-trash-can"></i> Self Destruct Platform Account
+                        </button>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="postScriptModal">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3 class="modal-title">Post New <span>Script</span></h3>
+                <button class="btn-close-modal" id="closePostModalBtn">&times;</button>
+            </div>
+            <form id="postScriptForm">
+                <div class="form-group">
+                    <label>Script Title *</label>
+                    <input type="text" id="postTitle" placeholder="e.g., Infinite Yield Hub" required>
+                </div>
+                <div class="form-group">
+                    <label>Target Game *</label>
+                    <input type="text" id="postGame" placeholder="e.g., Blox Fruits, Universal" required>
+                </div>
+                <div class="form-group">
+                    <label>Short Description</label>
+                    <textarea id="postDesc" rows="2" placeholder="Explain what features this script has..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Source Code Link / Raw Code *</label>
+                    <textarea id="postSource" rows="4" placeholder="loadstring(game:HttpGet('...'))()" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Tags (Comma separated)</label>
+                    <input type="text" id="postTags" placeholder="Aimbot, Esp, Autofarm">
+                </div>
+                <button type="submit" class="btn-submit-script">Publish Globally</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="getScriptModal">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3 class="modal-title" id="getModalTitle">Script <span>Source</span></h3>
+                <button class="btn-close-modal" id="closeGetModalBtn">&times;</button>
+            </div>
+            <div class="preview-source" id="getModalPreview"></div>
+            <div class="action-row">
+                <button class="btn-modal-action btn-modal-copy" onclick="copyHubScriptCode()"><i class="fa-solid fa-copy"></i> Copy Script</button>
+                <button class="btn-modal-action btn-modal-download" onclick="downloadHubScriptFile()"><i class="fa-solid fa-download"></i> Download .lua</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const JSONBIN_BIN_ID = "6a2d01cada38895dfeb91f17";
+        const JSONBIN_MASTER_KEY = "$2a$10$QKpmJnLTtCa9wmEl969BIOiIq88D1E5eZQIGJ6Kpsdkw1kKmUVQ/e";
+        const JSONBIN_URL = "https://api.jsonbin.io/v3/b/" + JSONBIN_BIN_ID;
+
+        const CONFIG_LOOTLABS_API = "c3eab1b49af0c8074b3deaa5e7a46913d47bb8eff095c75fbe5a2cf706c38318";
+        const CONFIG_PASTEBIN_API = "NMlXRUcj1Rk-3qo24TLzttANtGuSjaMp";
+
+        let currentLoggedInUser = null;
+        let totalScriptsLocal = [];
+        let currentlySelectedScriptCode = "";
+        let currentlySelectedScriptTitle = "";
+
+        let accountsDatabase = JSON.parse(localStorage.getItem('ub_accounts')) || [];
+        let activeUserKeys = JSON.parse(localStorage.getItem('ub_userkeys')) || {};
+
+        window.addEventListener('DOMContentLoaded', () => {
+            const savedUser = localStorage.getItem('ub_session');
+            if (savedUser) {
+                logUserIntoSystem(savedUser, true); 
+            }
+        });
+
+        async function fetchScriptsFromCloud() {
+            const grid = document.getElementById('scriptGrid');
+            if(grid) {
+                grid.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fa-solid fa-spinner fa-spin" style="color: var(--accent-pink);"></i>
+                        <p>Syncing script directory with cloud network...</p>
+                    </div>`;
+            }
+
+            try {
+                const response = await fetch(JSONBIN_URL + "/latest", {
+                    method: 'GET',
+                    headers: {
+                        'X-Master-Key': JSONBIN_MASTER_KEY,
+                        'X-Bin-Meta': 'false'
+                    }
+                });
+
+                if (response.status === 200 || response.status === 304) {
+                    const data = await response.json();
+                    if (Array.isArray(data)) {
+                        totalScriptsLocal = data;
+                    } else if (data && Array.isArray(data.record)) {
+                        totalScriptsLocal = data.record;
+                    } else {
+                        totalScriptsLocal = [];
+                    }
+                } else {
+                    totalScriptsLocal = [];
+                }
+                renderScripts(totalScriptsLocal);
+            } catch (error) {
+                console.error("Cloud Pull failure:", error);
+                totalScriptsLocal = [];
+                renderScripts(totalScriptsLocal);
+            }
+        }
+
+        // === SINKRONISASI COCOK DENGAN FORMAT STRUKTUR UTAMA JSONBIN RECORD ===
+        async function updateScriptsToCloud(updatedArray) {
+            try {
+                const response = await fetch(JSONBIN_URL, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Master-Key': JSONBIN_MASTER_KEY
+                    },
+                    // Mengirim pembungkus object record agar sinkron saat ditarik ulang secara real-time
+                    body: JSON.stringify({ record: updatedArray })
+                });
+                if (!response.ok) throw new Error('Cloud push rejected.');
+                totalScriptsLocal = updatedArray;
+                renderScripts(totalScriptsLocal);
+                return true;
+            } catch (error) {
+                console.error("Cloud Sync failure:", error);
+                fireToastNotification('Failed sync network servers!', false);
+                return false;
+            }
+        }
+
+        function renderScripts(scripts) {
+            const grid = document.getElementById('scriptGrid');
+            const countLabel = document.getElementById('scriptCount');
+            if(!grid) return;
+
+            grid.innerHTML = "";
+            countLabel.textContent = "Showing " + scripts.length + " Scripts.";
+
+            if(scripts.length === 0) {
+                grid.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fa-solid fa-box-open"></i>
+                        <p>No scripts available. Be the first to upload one!</p>
+                    </div>`;
+                return;
+            }
+
+            scripts.forEach(script => {
+                const card = document.createElement('div');
+                card.className = "script-card";
+                
+                const isOwner = (script.uploader === currentLoggedInUser);
+                const deleteButtonHtml = isOwner ? `<button class="btn-delete-script" onclick="deleteScriptById('${script.id}')" title="Remove Script"><i class="fa-solid fa-trash-can"></i></button>` : '';
+
+                let tagsHtml = "";
+                if(Array.isArray(script.tags)){
+                    script.tags.forEach(tagElement => { tagsHtml += `<span class="tag">${tagElement}</span>`; });
+                }
+
+                card.innerHTML = `
+                    ${deleteButtonHtml}
+                    <div class="card-top">
+                        <div class="card-header">
+                            <span class="game-badge">${script.game}</span>
+                        </div>
+                        <h4 class="script-title">${script.title}</h4>
+                        <p class="script-desc">${script.description}</p>
+                        <div class="tags-wrapper">${tagsHtml}</div>
+                    </div>
+                    <div>
+                        <button class="btn-get" onclick="openGetScriptView('${script.id}')">
+                            <i class="fa-solid fa-code"></i> Get Script
+                        </button>
+                        <div class="card-footer">
+                            <div class="uploader">
+                                <img src="${script.avatar || 'https://api.dicebear.com/7.x/bottts/svg?seed=Guest'}" alt="av">
+                                <span>${script.uploader}</span>
+                            </div>
+                            <div class="stats">
+                                <span><i class="fa-solid fa-eye"></i> ${script.views || 0}</span>
+                                <span><i class="fa-solid fadownload"></i> ${script.downloads || 0}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        async function handlePostScriptSubmit(e) {
+            e.preventDefault();
+            const title = document.getElementById('postTitle').value.trim();
+            const game = document.getElementById('postGame').value.trim();
+            const desc = document.getElementById('postDesc').value.trim();
+            const source = document.getElementById('postSource').value.trim();
+            const tagsRaw = document.getElementById('postTags').value.trim();
+
+            if(!title || !game || !source) {
+                fireToastNotification("Please insert required elements.", false);
+                return;
+            }
+
+            const processedTags = tagsRaw ? tagsRaw.split(',').map(tagItem => tagItem.trim()).filter(tagItem => tagItem) : ['Universal'];
+
+            const newScriptObj = {
+                id: "script_" + Date.now(),
+                title: title,
+                game: game,
+                description: desc || "No description provided.",
+                sourceCode: source,
+                tags: processedTags,
+                uploader: currentLoggedInUser || "Anonymous",
+                avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=" + (currentLoggedInUser || 'Guest'),
+                views: 0,
+                downloads: 0
+            };
+
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            const oldTxt = submitBtn.innerHTML;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Broadcasting Cloud...`;
+
+            const fullDatabase = [newScriptObj, ...totalScriptsLocal];
+            const success = await updateScriptsToCloud(fullDatabase);
+
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = oldTxt;
+
+            if(success) {
+                fireToastNotification("Script pushed worldwide successful!");
+                e.target.reset();
+                document.getElementById('postScriptModal').classList.remove('active');
+            }
+        }
+
+        async function deleteScriptById(scriptId) {
+            if(!confirm("Are you sure you want to delete this script from cloud records?")) return;
+            fireToastNotification("Erasing index from servers...");
+            const secondaryDb = totalScriptsLocal.filter(scriptItem => scriptItem.id !== scriptId);
+            const status = await updateScriptsToCloud(secondaryDb);
+            if(status) fireToastNotification("Script vanished successfully!");
+        }
+
+        function openGetScriptView(id) {
+            const found = totalScriptsLocal.find(scriptItem => scriptItem.id === id);
+            if(!found) return;
+
+            found.views = (found.views || 0) + 1;
+            currentlySelectedScriptCode = found.sourceCode;
+            currentlySelectedScriptTitle = found.title;
+
+            document.getElementById('getModalTitle').innerHTML = `Script <span>Code</span>`;
+            document.getElementById('getModalPreview').textContent = found.sourceCode;
+            document.getElementById('getScriptModal').classList.add('active');
+            
+            updateScriptsToCloud(totalScriptsLocal);
+        }
+
+        function copyHubScriptCode() {
+            if(!currentlySelectedScriptCode) return;
+            navigator.clipboard.writeText(currentlySelectedScriptCode).then(() => {
+                fireToastNotification("Code copied into clipboard buffer!");
+            });
+        }
+
+        function downloadHubScriptFile() {
+            if(!currentlySelectedScriptCode) return;
+            const blob = new Blob([currentlySelectedScriptCode], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const anchor = document.createElement('a');
+            anchor.href = url;
+            anchor.download = currentlySelectedScriptTitle.replace(/\s+/g, '_') + "_unknownBlox.lua";
+            document.body.appendChild(anchor);
+            anchor.click();
+            document.body.removeChild(anchor);
+        }
+
+        document.getElementById('registerForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const usernameInput = document.getElementById('regUsername').value.trim();
+            const emailInput = document.getElementById('regEmail').value.trim();
+            const passwordInput = document.getElementById('regPassword').value.trim();
+
+            if(accountsDatabase.find(accountItem => accountItem.username.toLowerCase() === usernameInput.toLowerCase())){
+                fireToastNotification("Account name identity taken!", false);
+                return;
+            }
+
+            accountsDatabase.push({ username: usernameInput, email: emailInput, password: passwordInput });
+            localStorage.setItem('ub_accounts', JSON.stringify(accountsDatabase));
+            
+            fireToastNotification("Account integration complete!");
+            e.target.reset();
+            logUserIntoSystem(usernameInput);
+        });
+
+        document.getElementById('loginForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const usernameInput = document.getElementById('loginUsername').value.trim();
+            const passwordInput = document.getElementById('loginPassword').value.trim();
+
+            const found = accountsDatabase.find(accountItem => accountItem.username.toLowerCase() === usernameInput.toLowerCase() && accountItem.password === passwordInput);
+            if(!found){
+                fireToastNotification("Invalid authorization data credentials!", false);
+                return;
+            }
+            logUserIntoSystem(found.username);
+        });
+
+        function logUserIntoSystem(username, isAutoLoad = false) {
+            currentLoggedInUser = username;
+            localStorage.setItem('ub_session', username);
+
+            document.getElementById('sidebarUsername').textContent = username;
+            document.getElementById('sidebarAvatar').src = "https://api.dicebear.com/7.x/bottts/svg?seed=" + username;
+            
+            document.getElementById('authScreen').classList.add('hidden');
+            document.getElementById('mainPage').classList.remove('hidden');
+            
+            if(!isAutoLoad) {
+                fireToastNotification("Welcome operator terminal: " + username + "!");
+            }
+            
+            fetchScriptsFromCloud();
+            renderActiveApiKeys();
+        }
+
+        function handleLogout() {
+            currentLoggedInUser = null;
+            localStorage.removeItem('ub_session');
+
+            document.getElementById('mainPage').classList.add('hidden');
+            document.getElementById('authScreen').classList.remove('hidden');
+            fireToastNotification("Logged out from system framework layer.");
+        }
+
+        function handleDeleteAccount() {
+            if(!confirm("Warning! This deletes internal keys and identities forever! Continue?")) return;
+            accountsDatabase = accountsDatabase.filter(accountItem => accountItem.username !== currentLoggedInUser);
+            localStorage.setItem('ub_accounts', JSON.stringify(accountsDatabase));
+            
+            if(activeUserKeys[currentLoggedInUser]) {
+                delete activeUserKeys[currentLoggedInUser];
+                localStorage.setItem('ub_userkeys', JSON.stringify(activeUserKeys));
+            }
+            handleLogout();
+        }
+
+        function switchView(menuElement) {
+            document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
+            menuElement.classList.add('active');
+
+            const targetViewId = menuElement.getAttribute('data-target');
+            document.querySelectorAll('.view-section').forEach(v => v.classList.add('hidden'));
+            document.getElementById(targetViewId).classList.remove('hidden');
+
+            const postBtn = document.getElementById('openPostModalBtn');
+            if (targetViewId === "scriptHubSection") {
+                postBtn.classList.remove('hidden');
+            } else {
+                postBtn.classList.add('hidden');
+            }
+
+            const pageTitles = {
+                "scriptHubSection": "Script Hub",
+                "executorsSection": "Executors",
+                "obfuscatorSection": "Obfuscator",
+                "apiKeysSection": "API Keys",
+                "keySystemSection": "Key System",
+                "settingsSection": "Account Settings"
+            };
+            document.getElementById('navPageTitle').textContent = pageTitles[targetViewId] || "unknownBlox";
+            
+            if(window.innerWidth <= 992) {
+                document.body.classList.remove('sidebar-open');
+                document.body.classList.add('sidebar-closed');
+            }
+        }
+
+        function generateUserApiKey() {
+            if(!currentLoggedInUser) return;
+            if(!activeUserKeys[currentLoggedInUser]) activeUserKeys[currentLoggedInUser] = [];
+
+            if(activeUserKeys[currentLoggedInUser].length >= 10){
+                fireToastNotification("Hourly limit key capacity filled!", false);
+                return;
+            }
+
+            const characterPool = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+            let part1 = ""; for(let i=0; i<16; i++) part1 += characterPool.charAt(Math.floor(Math.random() * characterPool.length));
+            let part2 = ""; for(let i=0; i<8; i++) part2 += characterPool.charAt(Math.floor(Math.random() * characterPool.length));
+            
+            const fullGeneratedKey = "ukB_" + part1 + "_" + part2;
+            activeUserKeys[currentLoggedInUser].push({ key: fullGeneratedKey, created: new Date().toLocaleString() });
+            localStorage.setItem('ub_userkeys', JSON.stringify(activeUserKeys));
+            
+            renderActiveApiKeys();
+            fireToastNotification("Cryptographic key token produced inside index.");
+        }
+
+        function renderActiveApiKeys() {
+            const body = document.getElementById('apiKeysTableBody');
+            const labelLimit = document.getElementById('apiLimitText');
+            if(!body) return;
+
+            body.innerHTML = "";
+            const list = activeUserKeys[currentLoggedInUser] || [];
+            labelLimit.textContent = "Hourly Rate Limit: " + list.length + " / 10 generated this hour";
+
+            if(list.length === 0){
+                body.innerHTML = `<tr><td colspan="3" style="text-align:center; color: var(--text-muted);">No cryptographic key links created yet.</td></tr>`;
+                return;
+            }
+
+            list.forEach((item, index) => {
+                const rowElement = document.createElement('tr');
+                rowElement.innerHTML = `
+                    <td><code>${item.key}</code></td>
+                    <td>${item.created}</td>
+                    <td style="text-align:center;"><button class="btn-action-icon" onclick="deleteApiKeyByIndex(${index})" title="Revoke Key"><i class="fa-solid fa-trash"></i></button></td>
+                `;
+                body.appendChild(rowElement);
+            });
+        }
+
+        function deleteApiKeyByIndex(index) {
+            if(!activeUserKeys[currentLoggedInUser]) return;
+            activeUserKeys[currentLoggedInUser].splice(index, 1);
+            localStorage.setItem('ub_userkeys', JSON.stringify(activeUserKeys));
+            renderActiveApiKeys();
+            fireToastNotification("Cryptographic deployment access token revoked.");
+        }
+
+        function generateKeySystemLink() {
+            const providerPrefix = document.getElementById('gatewayProviderSelect').value;
+            const characterPool = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+            let randomHash = ""; for(let i=0; i<12; i++) randomHash += characterPool.charAt(Math.floor(Math.random() * characterPool.length));
+            
+            let outputResultUrl = "";
+            if(providerPrefix.includes("lootlabs.gg")) {
+                outputResultUrl = "https://lootlabs.gg/api/gateway?apiKey=" + CONFIG_LOOTLABS_API + "&link=https://unknownblox.com/verify?token=" + randomHash;
+            } else if(providerPrefix.includes("pastebin.com")) {
+                outputResultUrl = "https://pastebin.com/raw/bypass?devKey=" + CONFIG_PASTEBIN_API + "&id=" + randomHash;
+            } else {
+                outputResultUrl = providerPrefix + encodeURIComponent("https://unknownblox.com/verify?token=" + randomHash);
+            }
+
+            document.getElementById('urlOutputField').querySelector('span').textContent = outputResultUrl;
+            fireToastNotification("Bypasser monetization link initialized!");
+        }
+
+        function copyGeneratedLinkToClipboard() {
+            const currentTextUrl = document.getElementById('urlOutputField').querySelector('span').textContent;
+            if(currentTextUrl.includes('waiting_generation')) return;
+            navigator.clipboard.writeText(currentTextUrl).then(() => { fireToastNotification("Monetization link buffered!"); });
+        }
+
+        function obfuscateScript() {
+            const inputSourceCode = document.getElementById('input-script').value;
+            if(!inputSourceCode.trim()) { 
+                fireToastNotification("Target payload string is empty!", false); 
+                return; 
+            }
+
+            try {
+                const hexPoolArray = ["0","1","2","3","4","5","6","7","8","9","A","B","C","D","E","F"];
+                let firstHexBuffer = ""; 
+                let secondHexBuffer = "";
+                
+                for (let indexCounter = 0; indexCounter < inputSourceCode.length; indexCounter++) {
+                    let singleCharacterHex = inputSourceCode.charCodeAt(indexCounter).toString(16).toUpperCase();
+                    if(singleCharacterHex.length < 2) {
+                        singleCharacterHex = "0" + singleCharacterHex;
+                    }
+                    firstHexBuffer += singleCharacterHex[0]; 
+                    secondHexBuffer += singleCharacterHex[1];
+                }
+
+                let finalEncryptedStringPart1 = ""; 
+                for(let indexCounter = 0; indexCounter < firstHexBuffer.length; indexCounter++) {
+                    finalEncryptedStringPart1 += hexPoolArray[parseInt(firstHexBuffer[indexCounter], 16)];
+                }
+                
+                let finalEncryptedStringPart2 = ""; 
+                for(let indexCounter = 0; indexCounter < secondHexBuffer.length; indexCounter++) {
+                    finalEncryptedStringPart2 += hexPoolArray[parseInt(secondHexBuffer[indexCounter], 16)];
+                }
+
+                const asciiBannerHeader = "-- [[ Protected by Anonymous Obfuscator Suite 2026 ]] \n";
+                const decryptionCoreLogic = "local firstEncryptedData = \"" + finalEncryptedStringPart1 + "\";\nlocal secondEncryptedData = \"" + finalEncryptedStringPart2 + "\";\n-- Decryption runtime compiler logic goes here\nloadstring(game:HttpGet(\"https://unknownblox.com/api/v1/loader\"))();";
+                
+                document.getElementById('output-script').value = asciiBannerHeader + decryptionCoreLogic;
+                fireToastNotification('Obfuscation completed successfully!');
+            } catch (error) {
+                fireToastNotification('Obfuscation failed!', false);
+            }
+        }
+
+        function copyObfuscatedToClipboard() {
+            const outputField = document.getElementById('output-script');
+            if (!outputField.value.trim()) return;
+            outputField.select();
+            navigator.clipboard.writeText(outputField.value).then(() => { fireToastNotification("Copied to clipboard!"); });
+        }
+
+        function downloadObfuscatedScript() {
+            const outputText = document.getElementById('output-script').value;
+            if (!outputText.trim()) return;
+            const blobFile = new Blob([outputText], { type: 'text/plain' });
+            const urlBlobLink = URL.createObjectURL(blobFile);
+            const tempAnchor = document.createElement('a'); 
+            tempAnchor.href = urlBlobLink; 
+            tempAnchor.download = "Protected_Script.lua";
+            document.body.appendChild(tempAnchor); 
+            tempAnchor.click(); 
+            document.body.removeChild(tempAnchor);
+        }
+
+        function fireToastNotification(messageText, isSuccess = true) {
+            const toastElement = document.getElementById('toast');
+            if(!toastElement) return;
+            toastElement.textContent = messageText;
+            toastElement.style.backgroundColor = isSuccess ? "#4cd137" : "var(--error-color)";
+            toastElement.classList.add('show');
+            setTimeout(() => { toastElement.classList.remove('show'); }, 3000);
+        }
+
+        document.getElementById('toLoginBtn').addEventListener('click', () => {
+            document.getElementById('registerFormContainer').classList.add('hidden');
+            document.getElementById('loginFormContainer').classList.remove('hidden');
+        });
+
+        document.getElementById('toRegisterBtn').addEventListener('click', () => {
+            document.getElementById('loginFormContainer').classList.add('hidden');
+            document.getElementById('registerFormContainer').classList.remove('hidden');
+        });
+
+        document.getElementById('openPostModalBtn').addEventListener('click', () => {
+            document.getElementById('postScriptModal').classList.add('active');
+        });
+        document.getElementById('closePostModalBtn').addEventListener('click', () => {
+            document.getElementById('postScriptModal').classList.remove('active');
+        });
+        document.getElementById('closeGetModalBtn').addEventListener('click', () => {
+            document.getElementById('getScriptModal').classList.remove('active');
+        });
+
+        document.getElementById('toggleSidebarBtn').addEventListener('click', () => {
+            if(document.body.classList.contains('sidebar-open')) {
+                document.body.classList.remove('sidebar-open');
+                document.body.classList.add('sidebar-closed');
+            } else {
+                document.body.classList.remove('sidebar-closed');
+                document.body.classList.add('sidebar-open');
+            }
+        });
+
+        document.getElementById('sidebarOverlay').addEventListener('click', () => {
+            document.body.classList.remove('sidebar-open');
+            document.body.classList.add('sidebar-closed');
+        });
+
+        document.getElementById('postScriptForm').addEventListener('submit', handlePostScriptSubmit);
+
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+            const searchQuery = e.target.value.toLowerCase().trim();
+            const filteredArray = totalScriptsLocal.filter(scriptItem => scriptItem.title.toLowerCase().includes(searchQuery) || scriptItem.game.toLowerCase().includes(searchQuery));
+            renderScripts(filteredArray);
+        });
+
+        document.getElementById('file-input').addEventListener('change', function(e) {
+            if(e.target.files.length === 0) return;
+            const targetFile = e.target.files[0];
+            const fileReaderInstance = new FileReader();
+            fileReaderInstance.onload = function(evt) {
+                document.getElementById('input-script').value = evt.target.result;
+                fireToastNotification("Local source code loaded!");
+            };
+            fileReaderInstance.readAsText(targetFile);
+        });
+    </script>
+</body>
+</html>
